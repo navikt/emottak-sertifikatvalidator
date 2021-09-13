@@ -1,10 +1,17 @@
 package no.nav.emottak.sertifikatvalidator.util
 
+import no.nav.emottak.sertifikatvalidator.log
+import no.nav.emottak.sertifikatvalidator.model.RevocationReason
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
 import no.nav.emottak.sertifikatvalidator.model.SertifikatType
+import org.bouncycastle.cert.ocsp.CertificateStatus
+import org.bouncycastle.cert.ocsp.RevokedStatus
+import org.bouncycastle.cert.ocsp.SingleResp
+import org.bouncycastle.cert.ocsp.UnknownStatus
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import java.security.cert.Certificate
 import java.security.cert.X509Certificate
 
 
@@ -31,6 +38,44 @@ internal fun createSertifikatInfoFromX509Certificate(x509Certificate: X509Certif
         beskrivelse = beskrivelse,
         feilmelding = null
     )
+
+internal fun createSertifikatInfoFromOCSPResponse(
+    certificate: X509Certificate,
+    singleResponse: SingleResp,
+    ssn: String
+): SertifikatInfo {
+    val certStatus: CertificateStatus? = singleResponse.certStatus
+    var status = SertifikatStatus.UKJENT
+    val beskrivelse: String
+    if (certStatus == null) {
+        status = SertifikatStatus.OK
+        beskrivelse = "Certificate not revoked"
+    } else if (certStatus is RevokedStatus) {
+        status = SertifikatStatus.REVOKERT
+        beskrivelse = if (certStatus.hasRevocationReason()) {
+            RevocationReason.getRevocationReason(certStatus.revocationReason)
+        } else {
+            "Revokert, Ukjent årsak"
+        }
+        log.info("Certificate is revoked: $beskrivelse")
+    } else if (certStatus is UnknownStatus) {
+        log.info("certificate status unknown, could be revoked")
+        beskrivelse = "certificate status unknown, could be revoked"
+    } else {
+        log.info("can't establish certificate status, could be revoked")
+        beskrivelse = "can't establish certificate status, could be revoked"
+    }
+    return SertifikatInfo(
+        serienummer = certificate.serialNumber.toString(),
+        status = status,
+        type = getSertifikatType(certificate),
+        utsteder = certificate.issuerX500Principal.name,
+        orgnummer = getOrganizationNumber(certificate),
+        fnr = ssn,
+        beskrivelse = beskrivelse,
+        feilmelding = null
+    )
+}
 
 private fun getSertifikatType(x509Certificate: X509Certificate): SertifikatType {
     return if (isVirksomhetssertifikat(x509Certificate))

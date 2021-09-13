@@ -31,6 +31,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
+    @Disabled
     fun `Utloept sertifikat ikke validert`() {
         val filnavn = "classpath:x509/astro_boy_expired_8414.cer"
         val gyldighetsdato = Instant.now()
@@ -44,6 +45,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
+    @Disabled
     fun `Selvsignert sertifikat ikke validert`() {
         val filnavn = "classpath:x509/buypass_test_1.cer"
         val gyldighetsdato = Instant.ofEpochMilli(1115734594000)
@@ -56,6 +58,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
+    @Disabled
     fun `Gyldig sertifikat validert`() {
         val filnavn = "classpath:x509/hedda_taugbol_385187086391706896612464_nonrep.cer"
         val gyldighetsdato = Instant.ofEpochMilli(1431267394000)
@@ -80,6 +83,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
+    @Disabled
     fun `Gyldig sertifikat validert 2`() {
         val filnavn = "classpath:x509/ingvild_sodal_2834285249931320560555_nonrep.cer"
         val gyldighetsdato = Instant.ofEpochMilli(1336659394000)
@@ -92,6 +96,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
+    @Disabled
     fun `Korrupt sertifikatinput ikke validert`() {
         val filnavn = "classpath:x509/invalid_certificate_string.cer"
         val certificateInputstream = createInputstreamFromFileName(filnavn)

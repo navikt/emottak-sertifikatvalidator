@@ -2,12 +2,12 @@ package no.nav.emottak.sertifikatvalidator.service
 
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
-import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_REVOKERT
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
+import no.nav.emottak.sertifikatvalidator.util.OCSPChecker
 import no.nav.emottak.sertifikatvalidator.util.createSertifikatInfoFromX509Certificate
 import no.nav.emottak.sertifikatvalidator.util.isSelfSigned
 import java.security.cert.CertificateExpiredException
@@ -18,7 +18,7 @@ import java.util.Date
 
 
 internal fun validateCertificate(x509Certificate: X509Certificate, dateInstant: Instant): SertifikatInfo {
-    //log.debug(x509Certificate.toString())
+    log.debug(x509Certificate.toString())
     try {
         x509Certificate.checkValidity(Date(dateInstant.toEpochMilli()))
 
@@ -27,6 +27,7 @@ internal fun validateCertificate(x509Certificate: X509Certificate, dateInstant: 
             return createSertifikatInfoFromX509Certificate(x509Certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
         }
         //TODO
+        OCSPChecker.getOCSPStatus(x509Certificate)
 //        if (isRevoked(x509Certificate, dateInstant)) {
 //            log.warn(SERTIFIKAT_REVOKERT)
 //            return createSertifikatInfoFromX509Certificate(x509Certificate, SertifikatStatus.REVOKERT, SERTIFIKAT_REVOKERT)
