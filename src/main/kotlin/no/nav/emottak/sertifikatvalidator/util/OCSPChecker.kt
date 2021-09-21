@@ -30,42 +30,35 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.io.IOException
 import java.math.BigInteger
-import java.security.PrivateKey
 import java.security.cert.X509Certificate
 
 class OCSPChecker {
     companion object {
         private val ACCESS_IDENTIFIER_OCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
-        private val ssnPolicyId = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
-        private val signerAlias = "nav_test4ca3_nonrep"
-        private val responderAlias = "buypass_test4_ca1"
+        private val SSN_POLICY_ID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
         private val bcProvider = BouncyCastleProvider()
 
-        private val ocspResponderCertificate = KeyStoreHandler.trustStore.getCertificate(responderAlias) as X509Certificate
-        private val providerName = ocspResponderCertificate.subjectX500Principal.name
-        private val provider = X500Name(providerName)
-        private val signerKey = KeyStoreHandler.keyStore.getKey(signerAlias, "123456789".toCharArray()) as PrivateKey
-        private val signerCert = KeyStoreHandler.keyStore.getCertificate(signerAlias) as X509Certificate
-        private val requestorName = signerCert.subjectX500Principal.name
-        private val certificateChain = getCertificateChain(signerAlias)
-
-        fun getOCSPStatus(certificate: X509Certificate): SertifikatInfo? {
+        fun getOCSPStatus(certificate: X509Certificate): SertifikatInfo {
             return try {
-                val request: OCSPReq = getOCSPRequest(certificate)
+                val certificateIssuer = certificate.issuerX500Principal.name
+                val ocspResponderCertificate = getOcspResponderCertificate(certificateIssuer)
+
+                val request: OCSPReq = createOCSPRequest(certificate, ocspResponderCertificate)
                 val response = postOCSPRequest(getOCSPUrl(certificate), request.getEncoded())
-                decodeResponse(response, certificate, request.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce))
+                decodeResponse(response, certificate, request.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce), ocspResponderCertificate)
             } catch (e: Exception) {
                 log.error(e.localizedMessage, e)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error", e)
             }
         }
 
-        private fun decodeResponse(response: OCSPResp, certificate: X509Certificate, requestNonce: Extension): SertifikatInfo {
+        private fun decodeResponse(response: OCSPResp, certificate: X509Certificate, requestNonce: Extension, ocspResponderCertificate: X509Certificate): SertifikatInfo {
 
             checkOCSPResponseStatus(response.status)
 
@@ -76,7 +69,7 @@ class OCSPChecker {
             val ocspCertificates = basicOCSPResponse.certs
             log.info("Certificates in response: " + ocspCertificates.size)
 
-            verifyOCSPCerts(basicOCSPResponse, ocspCertificates)
+            verifyOCSPCerts(basicOCSPResponse, ocspCertificates, ocspResponderCertificate)
             val certstat = basicOCSPResponse.responses
             return getCertificateStatusFromResponse(basicOCSPResponse, certificate, certstat)
         }
@@ -102,17 +95,17 @@ class OCSPChecker {
         }
 
         private fun getSsn(sr: SingleResp): String {
-            return getSsn(sr.getExtension(ssnPolicyId))
+            return getSsn(sr.getExtension(SSN_POLICY_ID))
         }
 
         private fun getSsn(bresp: BasicOCSPResp): String {
-            return getSsn(bresp.getExtension(ssnPolicyId))
+            return getSsn(bresp.getExtension(SSN_POLICY_ID))
         }
 
         private fun getSsn(ssnExtension: Extension?): String {
             return if (ssnExtension != null) {
                 try {
-                    ssnExtension.extnValue.encoded.toString()
+                    String(ssnExtension.extnValue.encoded).replace(Regex("[^0-9]"), "")
                 } catch (e: IOException) {
                     throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to extract SSN")
                 }
@@ -140,7 +133,7 @@ class OCSPChecker {
             }
         }
 
-        private fun verifyOCSPCerts(basicOCSPResponse: BasicOCSPResp, certificates: Array<X509CertificateHolder>) {
+        private fun verifyOCSPCerts(basicOCSPResponse: BasicOCSPResp, certificates: Array<X509CertificateHolder>, ocspResponderCertificate: X509Certificate) {
             val contentVerifierProviderBuilder = JcaContentVerifierProviderBuilder()
             try {
                 if (certificates.isEmpty()) {
@@ -149,7 +142,7 @@ class OCSPChecker {
                     }
                 } else {
                     val cert = certificates[0]
-                    verifyProvider(cert)
+                    verifyProvider(cert, X500Name(ocspResponderCertificate.subjectX500Principal.name))
                     log.info("Verifying certificate " + cert.subject.toString())
                     if (!basicOCSPResponse.isSignatureValid(contentVerifierProviderBuilder.build(cert))) {
                         log.error("OCSP response failed to verify")
@@ -162,7 +155,7 @@ class OCSPChecker {
             }
         }
 
-        private fun verifyProvider(cert: X509CertificateHolder) {
+        private fun verifyProvider(cert: X509CertificateHolder, provider: X500Name) {
             if (!RFC4519Style.INSTANCE.areEqual(provider, cert.issuer)) {
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "OCSP response received from unexpected provider: ${cert.issuer}")
             }
@@ -172,6 +165,7 @@ class OCSPChecker {
             return try {
                 OCSPResp(response)
             } catch (e: IOException) {
+                log.error("Error", e)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_SIGNATURE_VERIFICATION_FAILED, e)
             }
         }
@@ -196,17 +190,33 @@ class OCSPChecker {
                 .post()
                 .body(Mono.just(encoded), ByteArray::class.java)
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .retrieve()
-                .bodyToFlux(ByteArray::class.java)
-                .blockFirst()
-                ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Timeout")
+                .exchangeToMono(this::handleResponse)
+                .block() ?: throw RuntimeException()
+
             return getOCSPResp(response)
         }
 
-        private fun getOCSPRequest(certificate: X509Certificate): OCSPReq {
+        private fun handleResponse(clientResponse: ClientResponse): Mono<ByteArray>
+        {
+            if (clientResponse.statusCode().isError) {
+                log.error("HttpStatusCode = ${clientResponse.statusCode()}")
+                log.error("HttpHeaders = ${clientResponse.headers().asHttpHeaders()}")
+                log.error("ResponseBody = ${clientResponse.bodyToMono(String::class.java)}")
+            }
+
+            return clientResponse.bodyToMono(ByteArray::class.java)
+        }
+
+        private fun createOCSPRequest(certificate: X509Certificate, ocspResponderCertificate: X509Certificate): OCSPReq {
             try {
                 log.debug("Sjekker sertifikat ${certificate.serialNumber}")
                 val ocspReqBuilder = OCSPReqBuilder()
+                val providerName = ocspResponderCertificate.subjectX500Principal.name
+                val provider = X500Name(providerName)
+                val signerAlias = KeyStoreHandler.getSignerAlias(providerName)
+                val signerCert = KeyStoreHandler.getSignerCert(signerAlias)
+                val requestorName = signerCert.subjectX500Principal.name
+
                 val digCalcProv = JcaDigestCalculatorProviderBuilder().setProvider(bcProvider).build()
                 val id: CertificateID = JcaCertificateID(
                     digCalcProv.get(CertificateID.HASH_SHA1),
@@ -216,7 +226,7 @@ class OCSPChecker {
                 ocspReqBuilder.addRequest(id)
                 val extensionsGenerator = ExtensionsGenerator()
 
-                addServiceLocator(certificate, extensionsGenerator)
+                addServiceLocator(certificate, extensionsGenerator, provider)
                 addSsnExtension(certificate, extensionsGenerator)
                 addNonceExtension(extensionsGenerator)
 
@@ -225,7 +235,7 @@ class OCSPChecker {
                 ocspReqBuilder.setRequestorName(GeneralName(GeneralName.directoryName, requestorName))
                 val request: OCSPReq = ocspReqBuilder.build(
                     JcaContentSignerBuilder("SHA256WITHRSAENCRYPTION").setProvider(bcProvider)
-                        .build(signerKey), certificateChain
+                        .build(KeyStoreHandler.getSignerKey(signerAlias)), KeyStoreHandler.getCertificateChain(signerAlias)
                 )
                 log.debug("OCSP Request created")
                 log.debug("Request signed: ${request.isSigned}")
@@ -234,6 +244,17 @@ class OCSPChecker {
                 log.error(FAILED_TO_GENERATE_REVOCATION_REQUEST, e)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, FAILED_TO_GENERATE_REVOCATION_REQUEST, e)
             }
+        }
+
+        private fun getOcspResponderCertificate(certificateIssuer: String): X509Certificate {
+            log.debug("getOcspResponderCertificate: $certificateIssuer")
+            KeyStoreHandler.trustStore.aliases().toList().forEach { alias -> 
+                val cert = KeyStoreHandler.trustStore.getCertificate(alias) as X509Certificate
+                if (cert.subjectX500Principal.name == certificateIssuer) {
+                    return cert
+                }
+            }
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke issuer sertifikat")
         }
 
         private fun addNonceExtension(extensionsGenerator: ExtensionsGenerator) {
@@ -245,11 +266,11 @@ class OCSPChecker {
             )
         }
 
-        private fun addServiceLocator(certificate: X509Certificate, extensionsGenerator: ExtensionsGenerator) {
+        private fun addServiceLocator(certificate: X509Certificate, extensionsGenerator: ExtensionsGenerator, provider: X500Name) {
             getAuthorityInfoAccessObject(certificate)?.let {
                 val vector = ASN1EncodableVector()
                 vector.add(it.toASN1Primitive())
-                vector.add(X500Name(providerName))
+                vector.add(provider)
                 extensionsGenerator.addExtension(
                     OCSPObjectIdentifiers.id_pkix_ocsp_service_locator,
                     false,
@@ -261,7 +282,7 @@ class OCSPChecker {
         private fun addSsnExtension(certificate: X509Certificate, extensionsGenerator: ExtensionsGenerator) {
             if (!isVirksomhetssertifikat(certificate)) {
                 log.info("adding SSN extension")
-                extensionsGenerator.addExtension(ssnPolicyId, false, DEROctetString(byteArrayOf(0)))
+                extensionsGenerator.addExtension(SSN_POLICY_ID, false, DEROctetString(byteArrayOf(0)))
             }
         }
     }

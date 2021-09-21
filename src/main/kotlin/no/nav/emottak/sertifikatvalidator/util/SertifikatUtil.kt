@@ -3,6 +3,7 @@ package no.nav.emottak.sertifikatvalidator.util
 import no.nav.emottak.sertifikatvalidator.FEIL_X509CERTIFICATE
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.KeyUsage
+import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler.Companion.getCertificateChain
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Object
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
@@ -190,14 +191,4 @@ private fun getKeyUsages(certificate: X509Certificate): List<KeyUsage> {
         }
     }
     return keyUsageList
-}
-
-internal fun getCertificateChain(alias: String): Array<X509CertificateHolder> {
-    val chain = KeyStoreHandler.keyStore.getCertificateChain(alias)
-    //val holders = arrayOfNulls<JcaX509CertificateHolder>(chain.size)
-    return chain?.filterIsInstance<X509Certificate>()?.map { JcaX509CertificateHolder(it) }?.toTypedArray() ?: emptyArray()
-//    for (i in chain.indices) {
-//        holders[i] = JcaX509CertificateHolder(chain[i])
-//    }
-//    return holders
 }

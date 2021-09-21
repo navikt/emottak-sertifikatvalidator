@@ -45,3 +45,5 @@ spec:
       value: /var/run/secrets/nais.io/vault/keystore_file
     - name: KEYSTORE_PWD
       value: /var/run/secrets/nais.io/vault/keystore_pwd
+    - name: SIGNER_SUBJECT_DN
+      value: {{signerSubjectDN}}

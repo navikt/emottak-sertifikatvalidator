@@ -10,6 +10,6 @@ const val SERTIFIKAT_IKKE_GYLDIG_ENDA = "Sertifikat ikke gyldig enda"
 const val SERTIFIKAT_SELF_SIGNED = "Sertifikat er selvsignert"
 
 const val FAILED_TO_GENERATE_REVOCATION_REQUEST = "Feil ved opprettelse av OCSP request"
-const val OCSP_SIGNATURE_VERIFICATION_FAILED = "Feil ved opprettelse av OCSP request"
+const val OCSP_SIGNATURE_VERIFICATION_FAILED = "Feil ved opprettelse av OCSP respons"
 
 const val UKJENT_FEIL = "Ukjent feil"

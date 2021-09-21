@@ -10,6 +10,7 @@ import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
 import no.nav.emottak.sertifikatvalidator.util.OCSPChecker
 import no.nav.emottak.sertifikatvalidator.util.createSertifikatInfoFromX509Certificate
 import no.nav.emottak.sertifikatvalidator.util.isSelfSigned
+import no.nav.emottak.sertifikatvalidator.util.isVirksomhetssertifikat
 import java.security.cert.CertificateExpiredException
 import java.security.cert.CertificateNotYetValidException
 import java.security.cert.X509Certificate
@@ -26,12 +27,18 @@ internal fun validateCertificate(x509Certificate: X509Certificate, dateInstant: 
             log.warn(SERTIFIKAT_SELF_SIGNED)
             return createSertifikatInfoFromX509Certificate(x509Certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
         }
-        //TODO
-        OCSPChecker.getOCSPStatus(x509Certificate)
-//        if (isRevoked(x509Certificate, dateInstant)) {
-//            log.warn(SERTIFIKAT_REVOKERT)
-//            return createSertifikatInfoFromX509Certificate(x509Certificate, SertifikatStatus.REVOKERT, SERTIFIKAT_REVOKERT)
-//        }
+        if (isVirksomhetssertifikat(x509Certificate)) {
+            log.info("Virksomhetssertifikat, sjekker crl")
+            //TODO
+        }
+        else {
+            log.info("Personlig sertifikat, sjekker OCSP")
+            val ocspResponse = OCSPChecker.getOCSPStatus(x509Certificate)
+            log.info("Response from OCSP check: $ocspResponse")
+            if (ocspResponse.status == SertifikatStatus.REVOKERT) {
+                return ocspResponse
+            }
+        }
 
         return createSertifikatInfoFromX509Certificate(x509Certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK)
     }

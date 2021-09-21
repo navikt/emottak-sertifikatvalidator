@@ -11,7 +11,6 @@ import org.bouncycastle.cert.ocsp.SingleResp
 import org.bouncycastle.cert.ocsp.UnknownStatus
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import java.security.cert.Certificate
 import java.security.cert.X509Certificate
 
 
@@ -57,12 +56,12 @@ internal fun createSertifikatInfoFromOCSPResponse(
         } else {
             "Revokert, Ukjent årsak"
         }
-        log.info("Certificate is revoked: $beskrivelse")
+        log.warn("Certificate is revoked: $beskrivelse")
     } else if (certStatus is UnknownStatus) {
-        log.info("certificate status unknown, could be revoked")
+        log.warn("certificate status unknown, could be revoked")
         beskrivelse = "certificate status unknown, could be revoked"
     } else {
-        log.info("can't establish certificate status, could be revoked")
+        log.warn("can't establish certificate status, could be revoked")
         beskrivelse = "can't establish certificate status, could be revoked"
     }
     return SertifikatInfo(
