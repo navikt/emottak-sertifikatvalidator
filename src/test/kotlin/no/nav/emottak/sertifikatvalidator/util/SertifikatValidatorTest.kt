@@ -6,16 +6,27 @@ import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_REVOKERT
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
 import no.nav.emottak.sertifikatvalidator.log
+import no.nav.emottak.sertifikatvalidator.model.SertifikatError
+import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
-import no.nav.emottak.sertifikatvalidator.service.validateCertificate
+import no.nav.emottak.sertifikatvalidator.service.SertifikatValidator
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
+
+@SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SertifikatValidatorTest {
+
+    @Autowired
+    private lateinit var sertifikatValidator: SertifikatValidator
 
     @Test
     @Disabled
@@ -25,7 +36,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.REVOKERT)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_REVOKERT)
     }
@@ -38,10 +49,11 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = validateCertificate(x509Certificate, gyldighetsdato)
-        assert(sertifikatInfo.status == SertifikatStatus.UTGAATT)
-        assert(sertifikatInfo.beskrivelse == SERTIFIKAT_IKKE_GYLDIG_LENGER)
-        log.info(sertifikatInfo.toString())
+        val exception = assertThrows<SertifikatError> {
+            sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        }
+        assert(exception.statusCode == HttpStatus.BAD_REQUEST)
+        assert(exception.message == SERTIFIKAT_IKKE_GYLDIG_LENGER)
     }
 
     @Test
@@ -52,9 +64,12 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = validateCertificate(x509Certificate, gyldighetsdato)
-        assert(sertifikatInfo.status == SertifikatStatus.FEIL_MED_SERTIFIKAT)
-        assert(sertifikatInfo.beskrivelse == SERTIFIKAT_SELF_SIGNED)
+        val exception = assertThrows<SertifikatError> {
+            sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        }
+
+        assert(exception.statusCode == HttpStatus.BAD_REQUEST)
+        assert(exception.message == SERTIFIKAT_SELF_SIGNED)
     }
 
     @Test
@@ -65,7 +80,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
     }
@@ -77,7 +92,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = validateCertificate(x509Certificate, Instant.now())
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, Instant.now())
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
     }
@@ -90,7 +105,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
     }
@@ -101,11 +116,11 @@ class SertifikatValidatorTest {
         val filnavn = "classpath:x509/invalid_certificate_string.cer"
         val certificateInputstream = createInputstreamFromFileName(filnavn)
 
-        val responseStatusException = assertThrows<ResponseStatusException> {
+        val exception = assertThrows<SertifikatError> {
             createX509Certificate(certificateInputstream)
         }
-        assert(responseStatusException.status == HttpStatus.BAD_REQUEST)
-        assert(responseStatusException.reason == FEIL_X509CERTIFICATE)
+        assert(exception.statusCode == HttpStatus.BAD_REQUEST)
+        assert(exception.message == FEIL_X509CERTIFICATE)
     }
 
 

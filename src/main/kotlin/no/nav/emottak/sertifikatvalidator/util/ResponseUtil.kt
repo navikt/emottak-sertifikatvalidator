@@ -1,5 +1,9 @@
 package no.nav.emottak.sertifikatvalidator.util
 
+import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
+import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
+import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
+import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.RevocationReason
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
@@ -26,16 +30,61 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntit
     }
 }
 
+internal fun sertifikatSelvsignert(certificate: X509Certificate) =
+    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
+
+internal fun sertifikatIkkeGyldigEnda(certificate: X509Certificate) =
+    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_ENDA)
+
+internal fun sertifikatUtloept(certificate: X509Certificate) =
+    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
+
+internal fun sertifikatOK(certificate: X509Certificate, ssn: String) =
+    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
+
+internal fun sertifikatOK(certificate: X509Certificate) =
+    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
+
 internal fun createSertifikatInfoFromX509Certificate(x509Certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String) =
-    SertifikatInfo(
-        serienummer = x509Certificate.serialNumber.toString(),
-        status = status,
-        type = getSertifikatType(x509Certificate),
-        utsteder = x509Certificate.issuerX500Principal.name,
-        orgnummer = getOrganizationNumber(x509Certificate),
-        fnr = null,
-        beskrivelse = beskrivelse,
-        feilmelding = null
+    createSertifikatInfoFromX509Certificate(x509Certificate, status, beskrivelse, null)
+
+internal fun createSertifikatInfoFromX509Certificate(x509Certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
+    if (getSertifikatType(x509Certificate) == SertifikatType.VIRKSOMHET) {
+        createVirksomhetssertifikatInfo(x509Certificate, status, beskrivelse)
+    }
+    else {
+        createPersonSertifikatInfo(x509Certificate, status, beskrivelse, ssn)
+    }
+
+private fun createPersonSertifikatInfo(
+    certificate: X509Certificate,
+    status: SertifikatStatus,
+    beskrivelse: String,
+    ssn: String?
+) = SertifikatInfo(
+    serienummer = certificate.serialNumber.toString(),
+    status = status,
+    type = SertifikatType.PERSONLIG,
+    utsteder = certificate.issuerX500Principal.name,
+    orgnummer = null,
+    fnr = ssn,
+    beskrivelse = beskrivelse,
+    feilmelding = null
+)
+
+private fun createVirksomhetssertifikatInfo(
+    certificate: X509Certificate,
+    status: SertifikatStatus,
+    beskrivelse: String
+) = SertifikatInfo(
+    serienummer = certificate.serialNumber.toString(),
+    status = status,
+    type = SertifikatType.VIRKSOMHET,
+    utsteder = certificate.issuerX500Principal.name,
+    orgnummer = getOrganizationNumber(certificate),
+    fnr = null,
+    beskrivelse = beskrivelse,
+    feilmelding = null
     )
 
 internal fun createSertifikatInfoFromOCSPResponse(

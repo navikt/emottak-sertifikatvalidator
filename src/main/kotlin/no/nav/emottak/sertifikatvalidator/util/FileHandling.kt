@@ -1,11 +1,11 @@
 package no.nav.emottak.sertifikatvalidator.util
 
 import no.nav.emottak.sertifikatvalidator.FEIL_BASE64_X509CERTIFICATE
+import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import org.apache.tomcat.util.codec.binary.Base64
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -17,7 +17,7 @@ internal fun decodeBase64(base64String: String): ByteArray =
         Base64.decodeBase64(base64String)
     }
     catch (e: Exception) {
-        throw ResponseStatusException(HttpStatus.BAD_REQUEST, FEIL_BASE64_X509CERTIFICATE)
+        throw SertifikatError(HttpStatus.BAD_REQUEST, FEIL_BASE64_X509CERTIFICATE)
     }
 
 

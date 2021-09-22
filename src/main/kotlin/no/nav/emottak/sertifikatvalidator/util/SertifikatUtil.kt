@@ -1,8 +1,8 @@
 package no.nav.emottak.sertifikatvalidator.util
 
 import no.nav.emottak.sertifikatvalidator.FEIL_X509CERTIFICATE
-import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.KeyUsage
+import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler.Companion.getCertificateChain
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Object
@@ -14,13 +14,9 @@ import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DLSequence
 import org.bouncycastle.asn1.DLTaggedObject
 import org.bouncycastle.asn1.x509.Extension
-import org.bouncycastle.cert.X509CertificateHolder
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.io.ByteArrayInputStream
-import java.io.IOException
 import java.io.InputStream
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
@@ -37,24 +33,6 @@ private const val POLICY_ID_AGENCY = "[2.16.578.1.26.1.0.3.2]" //2.16.578.1.26.1
 
 private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.5.4.5", "o")
 private val EXTRACT_ORGNO_PATTERN = Pattern.compile("^(\\d{9})$|^.*-\\s*(\\d{9})$")
-
-private val ssnCache = mutableMapOf<String,String>()
-
-//TODO
-internal fun getSSN(x509Certificate: X509Certificate): String? {
-    return if (!isVirksomhetssertifikat(x509Certificate)) {
-        val serialnumber = x509Certificate.serialNumber
-        val issuer = x509Certificate.issuerX500Principal.getName()
-        val ssn = ssnCache.get(issuer + serialnumber) ?: updateSSNCacheValue(x509Certificate)
-        ssn
-    }
-    else
-        null
-}
-
-fun updateSSNCacheValue(x509Certificate: X509Certificate): String {
-    TODO("Not yet implemented")
-}
 
 internal fun getOrganizationNumber(x509Certificate: X509Certificate): String? {
     return if (isVirksomhetssertifikat(x509Certificate))
@@ -80,7 +58,7 @@ private fun newLdapName(name: String): LdapName {
     return try {
         LdapName(name)
     } catch (e: InvalidNameException) {
-        throw ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to create LdapName", e)
+        throw SertifikatError(HttpStatus.BAD_REQUEST, "failed to create LdapName", e)
     }
 }
 
@@ -129,8 +107,7 @@ internal fun createX509Certificate(certificateInputStream: InputStream): X509Cer
         cf.generateCertificate(certificateInputStream) as X509Certificate
     }
     catch (e: CertificateException) {
-        log.error(FEIL_X509CERTIFICATE, e)
-        throw ResponseStatusException(HttpStatus.BAD_REQUEST, FEIL_X509CERTIFICATE)
+        throw SertifikatError(HttpStatus.BAD_REQUEST, FEIL_X509CERTIFICATE)
     }
 }
 
