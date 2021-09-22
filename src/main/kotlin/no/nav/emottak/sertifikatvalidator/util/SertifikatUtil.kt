@@ -1,14 +1,21 @@
 package no.nav.emottak.sertifikatvalidator.util
 
 import no.nav.emottak.sertifikatvalidator.FEIL_X509CERTIFICATE
-import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.KeyUsage
+import no.nav.emottak.sertifikatvalidator.model.SertifikatError
+import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler.Companion.getCertificateChain
 import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.ASN1Object
+import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Primitive
+import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DLSequence
+import org.bouncycastle.asn1.DLTaggedObject
+import org.bouncycastle.asn1.x509.Extension
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.security.cert.CertificateException
@@ -26,24 +33,6 @@ private const val POLICY_ID_AGENCY = "[2.16.578.1.26.1.0.3.2]" //2.16.578.1.26.1
 
 private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.5.4.5", "o")
 private val EXTRACT_ORGNO_PATTERN = Pattern.compile("^(\\d{9})$|^.*-\\s*(\\d{9})$")
-
-private val ssnCache = mutableMapOf<String,String>()
-
-
-internal fun getSSN(x509Certificate: X509Certificate): String? {
-    return if (!isVirksomhetssertifikat(x509Certificate)) {
-        val serialnumber = x509Certificate.serialNumber
-        val issuer = x509Certificate.issuerX500Principal.getName()
-        val ssn = ssnCache.get(issuer + serialnumber) ?: updateSSNCacheValue(x509Certificate)
-        ssn
-    }
-    else
-        null
-}
-
-fun updateSSNCacheValue(x509Certificate: X509Certificate): String {
-    TODO("Not yet implemented")
-}
 
 internal fun getOrganizationNumber(x509Certificate: X509Certificate): String? {
     return if (isVirksomhetssertifikat(x509Certificate))
@@ -69,7 +58,7 @@ private fun newLdapName(name: String): LdapName {
     return try {
         LdapName(name)
     } catch (e: InvalidNameException) {
-        throw ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to create LdapName", e)
+        throw SertifikatError(HttpStatus.BAD_REQUEST, "failed to create LdapName", e)
     }
 }
 
@@ -118,8 +107,48 @@ internal fun createX509Certificate(certificateInputStream: InputStream): X509Cer
         cf.generateCertificate(certificateInputStream) as X509Certificate
     }
     catch (e: CertificateException) {
-        log.error(FEIL_X509CERTIFICATE, e)
-        throw ResponseStatusException(HttpStatus.BAD_REQUEST, FEIL_X509CERTIFICATE)
+        throw SertifikatError(HttpStatus.BAD_REQUEST, FEIL_X509CERTIFICATE)
+    }
+}
+
+fun getAuthorityInfoAccess(certificate: X509Certificate, method: ASN1ObjectIdentifier): String {
+    val obj = getExtension(certificate, Extension.authorityInfoAccess.id) ?: return ""
+    val accessDescriptions = obj as ASN1Sequence //ASN1Sequence.getInstance(obj)
+    accessDescriptions.forEach {
+        val accessDescription = it as ASN1Sequence
+        if (accessDescription.size() == 2) {
+            val identifier = accessDescription.getObjectAt(0) as ASN1ObjectIdentifier
+            if (method.equals(identifier)) {
+                return getStringFromGeneralName(accessDescription.getObjectAt(1) as ASN1Object)
+            }
+        }
+    }
+    return ""
+}
+
+internal fun getAuthorityInfoAccessObject(certificate: X509Certificate): ASN1Object? {
+    var aia = getExtension(certificate, Extension.authorityInfoAccess.id)
+    val certificateChain = getCertificateChain(certificate.subjectX500Principal.name)
+    var i = 0
+    while (aia == null && i < certificateChain.size) {
+        aia = getExtension(certificateChain[i].toASN1Structure() as X509Certificate, Extension.authorityInfoAccess.id)
+        i++
+    }
+    return aia
+}
+
+private fun getStringFromGeneralName(names: ASN1Object): String {
+    val taggedObject = names as DLTaggedObject
+    return String(ASN1OctetString.getInstance(taggedObject, false).octets)
+}
+
+fun getExtension(certificate: X509Certificate, oid: String): ASN1Primitive? {
+    val value = certificate.getExtensionValue(oid)
+    return if (value == null) {
+        null
+    } else {
+        val ap = JcaX509ExtensionUtils.parseExtensionValue(value)
+        ASN1Sequence.getInstance(ap.getEncoded())
     }
 }
 
