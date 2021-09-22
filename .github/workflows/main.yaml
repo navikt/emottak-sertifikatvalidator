@@ -2,7 +2,7 @@ name: "Build and deploy emottak-sertifikatvalidator"
 on:
   push:
     branches:
-    - "ocsp_check"
+    - "master"
 env:
   "IMAGE": "docker.pkg.github.com/${{ github.repository }}/emottak-sertifikatvalidator:${{\
     \ github.sha }}"
