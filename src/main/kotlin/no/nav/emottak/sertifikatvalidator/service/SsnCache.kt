@@ -25,7 +25,7 @@ class SsnCache {
         return "$issuer$serialnumber"
     }
 
-    @Scheduled(cron = "* 0 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     private fun clearCache() {
         //ssnCache["add"] = "added value to cache"
         log.info("Scheduled clearing of ssn cache. ${ssnCache.size} items in cache before clearing.")

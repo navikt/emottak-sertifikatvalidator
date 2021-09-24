@@ -36,7 +36,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val ssnCache: SsnCache) 
             if (isVirksomhetssertifikat(x509Certificate)) {
                 log.info("Virksomhetssertifikat, sjekker crl")
                 //TODO CRL sjekk
-                sertifikatOK(x509Certificate)
+                return sertifikatOK(x509Certificate)
             } else {
                 val ssn = ssnCache.getSSN(x509Certificate)
                 if (ssn == null) {
