@@ -14,21 +14,25 @@ import org.bouncycastle.cert.ocsp.RevokedStatus
 import org.bouncycastle.cert.ocsp.SingleResp
 import org.bouncycastle.cert.ocsp.UnknownStatus
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import java.security.cert.X509Certificate
 
 
 internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
     return when(sertifikatInfo.status) {
-        SertifikatStatus.OK -> ResponseEntity.ok(sertifikatInfo)
-        SertifikatStatus.FEIL_MED_INPUT -> ResponseEntity.badRequest().body(sertifikatInfo)
-        SertifikatStatus.UTGAATT -> ResponseEntity.badRequest().body(sertifikatInfo)
-        SertifikatStatus.REVOKERT -> ResponseEntity.badRequest().body(sertifikatInfo)
-        SertifikatStatus.FEIL_MED_SERTIFIKAT -> ResponseEntity.badRequest().body(sertifikatInfo)
-        SertifikatStatus.FEIL_MED_TJENESTEN -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(sertifikatInfo)
-        SertifikatStatus.UKJENT -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(sertifikatInfo)
+        SertifikatStatus.OK -> createResponseEntity(HttpStatus.OK, sertifikatInfo)
+        SertifikatStatus.FEIL_MED_INPUT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
+        SertifikatStatus.UTGAATT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
+        SertifikatStatus.REVOKERT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
+        SertifikatStatus.FEIL_MED_SERTIFIKAT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
+        SertifikatStatus.FEIL_MED_TJENESTEN -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo)
+        SertifikatStatus.UKJENT -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo)
     }
 }
+
+private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo) =
+    ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 
 internal fun sertifikatSelvsignert(certificate: X509Certificate) =
     createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
