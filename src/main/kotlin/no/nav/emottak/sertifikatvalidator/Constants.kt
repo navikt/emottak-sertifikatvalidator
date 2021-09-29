@@ -12,4 +12,8 @@ const val SERTIFIKAT_SELF_SIGNED = "Sertifikat er selvsignert"
 const val FAILED_TO_GENERATE_REVOCATION_REQUEST = "Feil ved opprettelse av OCSP request"
 const val OCSP_SIGNATURE_VERIFICATION_FAILED = "Feil ved opprettelse av OCSP respons"
 
+const val FAILED_TO_CREATE_CRL = "Henting av CRL feilet"
+const val REVOCATION_REASON_UNKNOWN = "Ukjent grunn"
+const val CERTIFICATE_ISSUER_UNKNOWN = "Ukjent sertifikatutsteder"
+
 const val UKJENT_FEIL = "Ukjent feil"

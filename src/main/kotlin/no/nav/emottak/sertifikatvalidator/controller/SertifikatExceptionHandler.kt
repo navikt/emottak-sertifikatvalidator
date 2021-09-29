@@ -6,7 +6,7 @@ import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
-import no.nav.emottak.sertifikatvalidator.util.createSertifikatInfoFromX509Certificate
+import no.nav.emottak.sertifikatvalidator.util.createSertifikatInfoFromCertificate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -26,7 +26,7 @@ internal class SertifikatExceptionHandler {
     private fun createResponseBody(ex: SertifikatError): SertifikatInfo? {
         return ex.sertifikatInfo
             ?: if (ex.certificate != null) {
-                createSertifikatInfoFromX509Certificate(ex.certificate, SertifikatStatus.UKJENT, UKJENT_FEIL)
+                createSertifikatInfoFromCertificate(ex.certificate, SertifikatStatus.UKJENT, UKJENT_FEIL)
             }
             else {
                 null

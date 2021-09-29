@@ -137,7 +137,7 @@ internal fun getAuthorityInfoAccessObject(certificate: X509Certificate): ASN1Obj
     return aia
 }
 
-private fun getStringFromGeneralName(names: ASN1Object): String {
+internal fun getStringFromGeneralName(names: ASN1Object): String {
     val taggedObject = names as DLTaggedObject
     return String(ASN1OctetString.getInstance(taggedObject, false).octets)
 }
@@ -148,7 +148,7 @@ fun getExtension(certificate: X509Certificate, oid: String): ASN1Primitive? {
         null
     } else {
         val ap = JcaX509ExtensionUtils.parseExtensionValue(value)
-        ASN1Sequence.getInstance(ap.getEncoded())
+        ASN1Sequence.getInstance(ap.encoded)
     }
 }
 

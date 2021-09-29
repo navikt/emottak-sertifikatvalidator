@@ -1,3 +1,10 @@
 ingresses:
 - "https://emottak-sertifikatvalidator.intern.nav.no"
-signerSubjectDN: "SERIALNUMBER=889640782,CN=ARBEIDS OG VELFERDSETATEN,O=ARBEIDS- OG VELFERDSETATEN,C=NO"
+signer:
+  dn: "SERIALNUMBER=889640782,CN=ARBEIDS OG VELFERDSETATEN,O=ARBEIDS- OG VELFERDSETATEN,C=NO"
+buypass:
+  dn: "CN=Buypass Class 3 Test2 CA 3, O=Buypass AS-983163327, C=NO"
+  crl: "http://crl.test2.buypass.no/crl/BPClass3T2CA3.crl"
+commfides:
+  dn: "C=NO, O=Commfides Norge AS - 988 312 495, OU=CPN Enterprise-Norwegian SHA256 CA- TEST, OU=Commfides Trust Environment(C) 2014 Commfides Norge AS - TEST, CN=Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"
+  crl: "http://crl1.test.commfides.com/CommfidesEnterprise-SHA256.crl"

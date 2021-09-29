@@ -35,30 +35,34 @@ private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: Sertifi
     ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 
 internal fun sertifikatSelvsignert(certificate: X509Certificate) =
-    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
+
+internal fun sertifikatRevokert(certificate: X509Certificate, revokeringsBeskrivelse: String) =
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.REVOKERT, revokeringsBeskrivelse)
 
 internal fun sertifikatIkkeGyldigEnda(certificate: X509Certificate) =
-    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_ENDA)
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_ENDA)
 
 internal fun sertifikatUtloept(certificate: X509Certificate) =
-    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
 
-internal fun sertifikatOK(certificate: X509Certificate, ssn: String) =
-    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
+internal fun sertifikatOK(certificate: X509Certificate, ssn: String?) =
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
 
 internal fun sertifikatOK(certificate: X509Certificate) =
-    createSertifikatInfoFromX509Certificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
 
-internal fun createSertifikatInfoFromX509Certificate(x509Certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String) =
-    createSertifikatInfoFromX509Certificate(x509Certificate, status, beskrivelse, null)
+internal fun createSertifikatInfoFromCertificate(certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String) =
+    createSertifikatInfoFromCertificate(certificate, status, beskrivelse, null)
 
-internal fun createSertifikatInfoFromX509Certificate(x509Certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
-    if (getSertifikatType(x509Certificate) == SertifikatType.VIRKSOMHET) {
-        createVirksomhetssertifikatInfo(x509Certificate, status, beskrivelse)
-    }
-    else {
-        createPersonSertifikatInfo(x509Certificate, status, beskrivelse, ssn)
-    }
+internal fun createSertifikatInfoFromCertificate(certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
+        if (getSertifikatType(certificate) == SertifikatType.VIRKSOMHET) {
+            log.info("Sertifikat: ${certificate.serialNumber}, sertifikatstatus: $status")
+            createVirksomhetssertifikatInfo(certificate, status, beskrivelse)
+        } else {
+            log.info("Sertifikat: ${certificate.serialNumber}, sertifikatstatus: $status")
+            createPersonSertifikatInfo(certificate, status, beskrivelse, ssn)
+        }
 
 private fun createPersonSertifikatInfo(
     certificate: X509Certificate,
@@ -129,8 +133,8 @@ internal fun createSertifikatInfoFromOCSPResponse(
     )
 }
 
-private fun getSertifikatType(x509Certificate: X509Certificate): SertifikatType {
-    return if (isVirksomhetssertifikat(x509Certificate))
+private fun getSertifikatType(certificate: X509Certificate): SertifikatType {
+    return if (isVirksomhetssertifikat(certificate))
         SertifikatType.VIRKSOMHET
     else
         SertifikatType.PERSONLIG

@@ -37,4 +37,4 @@ private fun createInputstreamFromFile(filnavn: String) =
 internal fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable $varName")
 
-internal fun getFileAsString(filePath: String) = String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)
+internal fun getFileAsString(filePath: String) = String(createInputstreamFromFileName(filePath).readAllBytes(), StandardCharsets.UTF_8)
