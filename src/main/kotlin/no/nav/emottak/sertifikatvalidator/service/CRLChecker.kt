@@ -40,7 +40,7 @@ class CRLChecker {
     private val provider: Provider = BouncyCastleProvider()
 
     init {
-        createCrls()
+        //createCrls()
     }
 
     fun getCRLRevocationInfo(issuer: String, serialNumber: BigInteger): CRLRevocationInfo {
@@ -53,7 +53,7 @@ class CRLChecker {
         ) } ?: CRLRevocationInfo(serialNumber = serialNumber, revoked = false, revocationReason = "Ikke revokert")
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    //@Scheduled(cron = "0 0 0 * * *")
     private fun updateCRLsPeriodically() {
         log.info("Oppdaterer CRL-filer")
         crlFiles.forEach { crlEntry ->
