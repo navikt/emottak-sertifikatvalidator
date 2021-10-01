@@ -37,8 +37,7 @@ spec:
   vault:
     enabled: true
   filesFrom:
-    - secret: emottak-sertifikatvalidator-truststore
-    - secret: emottak-sertifikatvalidator-keystore
+    - secret: emottak-sertifikatvalidator-secrets
   env:
     - name: TRUSTSTORE_PATH
       value: /var/run/secrets/truststore.jks
