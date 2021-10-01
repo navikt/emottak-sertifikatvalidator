@@ -1,7 +1,7 @@
 ingresses:
 - "https://emottak-sertifikatvalidator.dev.intern.nav.no"
 signer:
-  dn: "SERIALNUMBER=889640782,CN=ARBEIDS OG VELFERDSETATEN,O=ARBEIDS- OG VELFERDSETATEN,C=NO"
+  dn: "SERIALNUMBER=889640782,CN=ARBEIDS- OG VELFERDSETATEN,O=ARBEIDS- OG VELFERDSETATEN,C=NO"
 buypass:
   dn: "CN=Buypass Class 3 Test4 CA 3, O=Buypass AS-983163327, C=NO"
   crl: "http://crl.test4.buypass.no/crl/BPClass3T4CA3.crl"
