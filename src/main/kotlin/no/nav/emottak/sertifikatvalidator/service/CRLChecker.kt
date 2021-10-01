@@ -123,10 +123,8 @@ class CRLChecker {
 
     private fun createCrls() {
         log.info("Henter CRL info")
-
-        updateCrlForDN(commfidesDN, commfidesCRL)
-        
         updateCrlForDN(buypassDN, buypassCRL)
+        updateCrlForDN(commfidesDN, commfidesCRL)
         log.info("CRL oppdatert med ${crlFiles.size} lister")
     }
 
