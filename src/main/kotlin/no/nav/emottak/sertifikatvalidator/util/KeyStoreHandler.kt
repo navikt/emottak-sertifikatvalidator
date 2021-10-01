@@ -53,11 +53,13 @@ class KeyStoreHandler {
         internal fun getSignerAlias(issuerDN: String): String {
             keyStore.aliases().toList().forEach { alias ->
                 val cert = keyStore.getCertificate(alias) as X509Certificate
-                log.info("--------signer cert details")
-                log.info("Provider input: $issuerDN")
-                log.info("Issuer: ${cert.issuerX500Principal.name}")
-                log.info("Subject: ${cert.subjectX500Principal.name}")
-                log.info("Looking for subject: $signerSubjectDN")
+                log.info("$alias cert details")
+                log.info("$issuerDN")
+                log.info("${cert.issuerX500Principal.name}")
+                log.info("${RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
+                log.info("${cert.subjectX500Principal.name}")
+                log.info("$signerSubjectDN")
+                log.info("${RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
                 if (RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name)) &&
                     RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))) {
                     log.info("Found signer certificate for $issuerDN ($alias)")
