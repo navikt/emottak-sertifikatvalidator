@@ -121,13 +121,19 @@ class CRLChecker {
 
     private fun createCrls() {
         log.info("Henter CRL info")
-        val buypassCRLHolder = CRLHolder(buypassDN, buypassCRL, createCRL(getCrlFileFromUrl(buypassCRL)))
-        log.info("CRL hentet: ${buypassCRLHolder.dn}, ${buypassCRLHolder.crlUrl}, ${buypassCRLHolder.updatedDate}")
-//        val commfidesCRLHolder = CRLHolder(commfidesDN, commfidesCRL, createCRL(getCrlFileFromUrl(commfidesCRL)))
-//        log.info("CRL hentet: ${commfidesCRLHolder.dn}, ${commfidesCRLHolder.crlUrl}, ${commfidesCRLHolder.updatedDate}")
-
-        crlFiles[buypassDN] = buypassCRLHolder
-        //crlFiles[commfidesDN] = commfidesCRLHolder
+        updateCrlForDN(buypassDN, buypassCRL)
+        updateCrlForDN(commfidesDN, commfidesCRL)
         log.info("CRL oppdatert med ${crlFiles.size} lister")
+    }
+
+    private fun updateCrlForDN(dn: X500Name, crlUrl: String) {
+        try {
+            log.info("Henter CRL: ${dn}, ${crlUrl}")
+            val crlHolder = CRLHolder(dn, crlUrl, createCRL(getCrlFileFromUrl(crlUrl)))
+            log.info("CRL hentet: ${dn}, ${crlUrl}, ${crlHolder.updatedDate}")
+            crlFiles[dn] = crlHolder
+        } catch (e: Exception) {
+            log.error("Henting av CRL for $dn på $crlUrl feilet", e)
+        }
     }
 }
