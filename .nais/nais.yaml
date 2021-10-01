@@ -36,6 +36,7 @@ spec:
     {{/each}}
   vault:
     enabled: true
+  webproxy: true
   filesFrom:
     - secret: emottak-sertifikatvalidator-secrets
   env:
