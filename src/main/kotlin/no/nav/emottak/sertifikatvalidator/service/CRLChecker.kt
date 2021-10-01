@@ -106,7 +106,7 @@ class CRLChecker {
             //.accept(MediaType("application", "pkix-crl"), MediaType("application", "x-pkcs7-crl"))
             .retrieve()
             .bodyToMono(ByteArray::class.java)
-            .retryWhen(Retry.backoff(3, Duration.ofSeconds(10)))
+            .retryWhen(Retry.backoff(3, Duration.ofSeconds(5)))
         return response.block(Duration.ofSeconds(30))?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
     }
 
