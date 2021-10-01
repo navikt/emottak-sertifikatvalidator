@@ -3,6 +3,8 @@ package no.nav.emottak.sertifikatvalidator.util
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import org.bouncycastle.asn1.x500.X500Name
+import org.bouncycastle.asn1.x500.style.BCStrictStyle
+import org.bouncycastle.asn1.x500.style.BCStyle
 import org.bouncycastle.asn1.x500.style.RFC4519Style
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder
@@ -56,10 +58,14 @@ class KeyStoreHandler {
                 log.info("$alias cert details")
                 log.info("$issuerDN")
                 log.info("${cert.issuerX500Principal.name}")
-                log.info("${RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
+                log.info("RFC4519: ${RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
+                log.info("BCSTYLE: ${BCStyle.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
+                log.info("BCSTRIC: ${BCStrictStyle.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
                 log.info("${cert.subjectX500Principal.name}")
                 log.info("$signerSubjectDN")
-                log.info("${RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
+                log.info("RFC4519: ${RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
+                log.info("BCSTYLE: ${BCStyle.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
+                log.info("BCSTRIC: ${BCStrictStyle.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
                 if (RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name)) &&
                     RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))) {
                     log.info("Found signer certificate for $issuerDN ($alias)")
