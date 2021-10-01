@@ -40,7 +40,7 @@ class CRLChecker {
     private val provider: Provider = BouncyCastleProvider()
 
     init {
-        //createCrls()
+        createCrls()
     }
 
     fun getCRLRevocationInfo(issuer: String, serialNumber: BigInteger): CRLRevocationInfo {
@@ -53,7 +53,7 @@ class CRLChecker {
         ) } ?: CRLRevocationInfo(serialNumber = serialNumber, revoked = false, revocationReason = "Ikke revokert")
     }
 
-    //@Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     private fun updateCRLsPeriodically() {
         log.info("Oppdaterer CRL-filer")
         crlFiles.forEach { crlEntry ->
@@ -120,10 +120,14 @@ class CRLChecker {
     }
 
     private fun createCrls() {
+        log.info("Henter CRL info")
         val buypassCRLHolder = CRLHolder(buypassDN, buypassCRL, createCRL(getCrlFileFromUrl(buypassCRL)))
+        log.info("CRL hentet: ${buypassCRLHolder.dn}, ${buypassCRLHolder.crlUrl}, ${buypassCRLHolder.updatedDate}")
         val commfidesCRLHolder = CRLHolder(commfidesDN, commfidesCRL, createCRL(getCrlFileFromUrl(commfidesCRL)))
+        log.info("CRL hentet: ${commfidesCRLHolder.dn}, ${commfidesCRLHolder.crlUrl}, ${commfidesCRLHolder.updatedDate}")
 
         crlFiles[buypassDN] = buypassCRLHolder
         crlFiles[commfidesDN] = commfidesCRLHolder
+        log.info("CRL oppdatert med ${crlFiles.size} lister")
     }
 }
