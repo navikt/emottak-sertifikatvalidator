@@ -36,13 +36,16 @@ spec:
     {{/each}}
   vault:
     enabled: true
+  filesFrom:
+    - secret: emottak-sertifikatvalidator-truststore
+    - secret: emottak-sertifikatvalidator-keystore
   env:
     - name: TRUSTSTORE_PATH
-      value: /var/run/secrets/nais.io/vault/truststore_file
+      value: /var/run/secrets/truststore.jks
     - name: TRUSTSTORE_PWD
       value: /var/run/secrets/nais.io/vault/truststore_pwd
     - name: KEYSTORE_PATH
-      value: /var/run/secrets/nais.io/vault/keystore_file
+      value: /var/run/secrets/keystore.jks
     - name: KEYSTORE_PWD
       value: /var/run/secrets/nais.io/vault/keystore_pwd
     - name: SIGNER_SUBJECT_DN
