@@ -4,6 +4,10 @@ springdoc:
   swagger-ui:
     path: '/internal/swagger'
 
+logging:
+  level:
+    web: trace
+
 management:
   endpoint:
     health:
