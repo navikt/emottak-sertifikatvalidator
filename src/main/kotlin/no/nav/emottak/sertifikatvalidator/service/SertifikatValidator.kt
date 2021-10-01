@@ -27,7 +27,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
 
     internal fun validateCertificate(certificate: X509Certificate, dateInstant: Instant): SertifikatInfo {
-        log.info(certificate.toString())
+        log.debug(certificate.toString())
         try {
             certificate.checkValidity(Date(dateInstant.toEpochMilli()))
             sjekkOmSertifikatErSelvsignert(certificate)

@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.cert.X509Certificate
+import javax.naming.ldap.LdapName
 
 class KeyStoreHandler {
 
@@ -55,14 +56,26 @@ class KeyStoreHandler {
         internal fun getSignerAlias(issuerDN: String): String {
             keyStore.aliases().toList().forEach { alias ->
                 val cert = keyStore.getCertificate(alias) as X509Certificate
+                val x500Issuer = X500Name(issuerDN)
+                val x500IssuerPrincial = X500Name(cert.issuerX500Principal.name)
+                val x500signer = X500Name(signerSubjectDN)
+                x500signer.rdNs.forEach {
+                    log.info("RDN: ${it.first.type}: ${it.first.value}")
+                }
+                val x500subject = X500Name(cert.subjectX500Principal.name)
+                x500subject.rdNs.forEach {
+                    log.info("RDN: ${it.first.type}: ${it.first.value}")
+                }
                 log.info("$alias cert details")
                 log.info("$issuerDN")
                 log.info("${cert.issuerX500Principal.name}")
+                log.info("LDAPNAM: ${LdapName(issuerDN) == LdapName(cert.issuerX500Principal.name)}")
                 log.info("RFC4519: ${RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
                 log.info("BCSTYLE: ${BCStyle.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
                 log.info("BCSTRIC: ${BCStrictStyle.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name))}")
                 log.info("${cert.subjectX500Principal.name}")
                 log.info("$signerSubjectDN")
+                log.info("LDAPNAM: ${LdapName(signerSubjectDN) == LdapName(cert.subjectX500Principal.name)}")
                 log.info("RFC4519: ${RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
                 log.info("BCSTYLE: ${BCStyle.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
                 log.info("BCSTRIC: ${BCStrictStyle.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))}")
