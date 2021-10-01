@@ -34,7 +34,6 @@ class CRLChecker {
 
     private var proxyHost: String? = System.getProperty("http.proxyHost")
     private var proxyPort: String? = System.getProperty("http.proxyPort")
-    private var nonProxyHosts: String? = System.getProperty("http.nonProxyHosts")
 
     private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap(2)
     private val buypassDN: X500Name = X500Name(getEnvVar("BUYPASS_DN", "CN=Buypass Class 3 Test4 CA 3,O=Buypass AS-983163327,C=NO"))
@@ -103,13 +102,13 @@ class CRLChecker {
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
         log.info("Henter URL $crlUrl")
         val httpClient = HttpClient.create()
-        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank() && !nonProxyHosts.isNullOrBlank()) {
+        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
             log.info("Setting proxy settings $proxyHost:$proxyPort")
             httpClient.proxy { proxy: TypeSpec ->
                 proxy.type(ProxyProvider.Proxy.HTTP)
                     .host(proxyHost!!)
                     .port(proxyPort!!.toInt())
-                    .nonProxyHosts(nonProxyHosts!!)
+                    //.nonProxyHosts(nonProxyHosts!!)
                     .build()
             }
         }
