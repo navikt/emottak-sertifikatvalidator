@@ -123,11 +123,11 @@ class CRLChecker {
         log.info("Henter CRL info")
         val buypassCRLHolder = CRLHolder(buypassDN, buypassCRL, createCRL(getCrlFileFromUrl(buypassCRL)))
         log.info("CRL hentet: ${buypassCRLHolder.dn}, ${buypassCRLHolder.crlUrl}, ${buypassCRLHolder.updatedDate}")
-        val commfidesCRLHolder = CRLHolder(commfidesDN, commfidesCRL, createCRL(getCrlFileFromUrl(commfidesCRL)))
-        log.info("CRL hentet: ${commfidesCRLHolder.dn}, ${commfidesCRLHolder.crlUrl}, ${commfidesCRLHolder.updatedDate}")
+//        val commfidesCRLHolder = CRLHolder(commfidesDN, commfidesCRL, createCRL(getCrlFileFromUrl(commfidesCRL)))
+//        log.info("CRL hentet: ${commfidesCRLHolder.dn}, ${commfidesCRLHolder.crlUrl}, ${commfidesCRLHolder.updatedDate}")
 
         crlFiles[buypassDN] = buypassCRLHolder
-        crlFiles[commfidesDN] = commfidesCRLHolder
+        //crlFiles[commfidesDN] = commfidesCRLHolder
         log.info("CRL oppdatert med ${crlFiles.size} lister")
     }
 }
