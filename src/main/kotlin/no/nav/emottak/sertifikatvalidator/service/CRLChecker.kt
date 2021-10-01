@@ -107,7 +107,7 @@ class CRLChecker {
             .retrieve()
             .bodyToMono(ByteArray::class.java)
             .retryWhen(Retry.backoff(3, Duration.ofSeconds(5)))
-        return response.block(Duration.ofSeconds(30))?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
+        return response.block()?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
     }
 
     private fun createCRL(input: InputStream?): X509CRL {
