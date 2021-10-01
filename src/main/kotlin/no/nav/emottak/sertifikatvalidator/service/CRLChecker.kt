@@ -103,6 +103,7 @@ class CRLChecker {
         log.info("Henter URL $crlUrl")
         val httpClient = HttpClient.create()
         if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
+            log.info("Setting proxy settings $proxyHost:$proxyPort")
             httpClient.proxy { proxy: TypeSpec ->
                 proxy.type(ProxyProvider.Proxy.HTTP)
                     .host(proxyHost!!)
