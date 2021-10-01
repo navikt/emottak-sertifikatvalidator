@@ -96,8 +96,9 @@ class CRLChecker {
 
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
         log.info("Henter URL $crlUrl")
-        val webClient: WebClient = WebClient.create(crlUrl)
-        val response = webClient.mutate().codecs { configurer ->
+        val response = WebClient.builder()
+            .baseUrl(crlUrl)
+            .codecs { configurer ->
                 configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)
             }
             .build()
@@ -105,7 +106,7 @@ class CRLChecker {
             //.accept(MediaType("application", "pkix-crl"), MediaType("application", "x-pkcs7-crl"))
             .retrieve()
             .bodyToMono(ByteArray::class.java)
-            .retryWhen(Retry.backoff(3, Duration.ofSeconds(3)))
+            .retryWhen(Retry.backoff(3, Duration.ofSeconds(10)))
         return response.block(Duration.ofSeconds(30))?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
     }
 
