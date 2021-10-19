@@ -8,6 +8,21 @@ logging:
   level:
     web: trace
 
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/v2.0
+          #The client_id of this application
+          accepted-audience: ${AZURE_APP_CLIENT_ID}, api://${AZURE_APP_CLIENT_ID}
+
+schedule:
+  cron:
+    crl: '0 0 0 * * *'
+    cache:
+      ssn: '0 0 * * * *'
+
 management:
   endpoint:
     health:

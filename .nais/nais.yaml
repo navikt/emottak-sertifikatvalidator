@@ -40,6 +40,10 @@ spec:
   azure:
     application:
       enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: emottak-signaturverifikator
   filesFrom:
     - secret: emottak-sertifikatvalidator-secrets
   env:

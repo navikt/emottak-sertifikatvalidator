@@ -58,7 +58,7 @@ class CRLChecker {
         ) } ?: CRLRevocationInfo(serialNumber = serialNumber, revoked = false, revocationReason = "Ikke revokert")
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "\${schedule.cron.crl}")
     private fun updateCRLsPeriodically() {
         log.info("Oppdaterer CRL-filer")
         crlFiles.forEach { crlEntry ->
