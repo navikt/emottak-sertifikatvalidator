@@ -21,8 +21,8 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
 
-@SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//@SpringBootTest
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SertifikatValidatorTest {
 
     @Autowired
