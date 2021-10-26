@@ -16,8 +16,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.netty.http.client.HttpClient
-import reactor.netty.transport.ProxyProvider
-import reactor.netty.transport.ProxyProvider.TypeSpec
 import java.io.InputStream
 import java.math.BigInteger
 import java.security.Provider
@@ -31,9 +29,6 @@ import java.util.*
 
 @Service
 class CRLChecker {
-
-    private var proxyHost: String? = System.getProperty("http.proxyHost")
-    private var proxyPort: String? = System.getProperty("http.proxyPort")
 
     private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap(2)
     private val buypassDN: X500Name = X500Name(getEnvVar("BUYPASS_DN", "CN=Buypass Class 3 Test4 CA 3,O=Buypass AS-983163327,C=NO"))
@@ -101,17 +96,17 @@ class CRLChecker {
 
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
         log.info("Henter URL $crlUrl")
-        val httpClient = HttpClient.create()
-        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
-            log.info("Setting proxy settings $proxyHost:$proxyPort")
-            httpClient.proxy { proxy: TypeSpec ->
-                proxy.type(ProxyProvider.Proxy.HTTP)
-                    .host(proxyHost!!)
-                    .port(proxyPort!!.toInt())
-                    //.nonProxyHosts(nonProxyHosts!!)
-                    .build()
-            }
-        }
+        val httpClient = HttpClient.create().proxyWithSystemProperties()
+//        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
+//            log.info("Setting proxy settings $proxyHost:$proxyPort")
+//            httpClient.proxy { proxy: TypeSpec ->
+//                proxy.type(ProxyProvider.Proxy.HTTP)
+//                    .host(proxyHost!!)
+//                    .port(proxyPort!!.toInt())
+//                    //.nonProxyHosts(nonProxyHosts!!)
+//                    //.build()
+//            }
+//        }
 
         val connector = ReactorClientHttpConnector(httpClient)
         val response = WebClient.builder().clientConnector(connector)
