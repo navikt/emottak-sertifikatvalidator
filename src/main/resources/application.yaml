@@ -6,7 +6,7 @@ springdoc:
 
 logging:
   level:
-    web: trace
+    web: DEBUG
 
 spring:
   security:
