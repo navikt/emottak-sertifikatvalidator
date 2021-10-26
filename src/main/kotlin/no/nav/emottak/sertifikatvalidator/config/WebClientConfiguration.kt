@@ -1,12 +1,14 @@
 package no.nav.emottak.sertifikatvalidator.config
 
-import no.nav.emottak.sertifikatvalidator.log
+import org.eclipse.jetty.client.HttpClient
+import org.eclipse.jetty.client.HttpProxy
+import org.eclipse.jetty.client.ProxyConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.http.client.reactive.ClientHttpConnector
+import org.springframework.http.client.reactive.JettyClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.netty.http.client.HttpClient
-import reactor.netty.transport.ProxyProvider
+
 
 @Configuration
 class WebClientConfiguration() {
@@ -18,18 +20,18 @@ class WebClientConfiguration() {
     @Bean
     fun webClient(): WebClient {
 
-        val httpClient = HttpClient.create()//.proxyWithSystemProperties()
-        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
-            log.info("Setting proxy settings $proxyHost:$proxyPort")
-            httpClient.proxy { proxy: ProxyProvider.TypeSpec ->
-                proxy.type(ProxyProvider.Proxy.HTTP)
-                    .host(proxyHost!!)
-                    .port(proxyPort!!.toInt())
-                    //.nonProxyHosts(nonProxyHosts!!)
+        val httpClient = HttpClient()
+        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank() && !nonProxyHosts.isNullOrBlank()) {
+            val proxyConfig: ProxyConfiguration = httpClient.proxyConfiguration
+            val proxy = HttpProxy(proxyHost, proxyPort!!.toInt())
+            nonProxyHosts!!.split("|").forEach { nonProxyHost ->
+                proxy.excludedAddresses.add(nonProxyHost)
             }
+            proxyConfig.proxies.add(proxy)
         }
 
-        val connector = ReactorClientHttpConnector(httpClient)
+        val connector: ClientHttpConnector = JettyClientHttpConnector(httpClient)
+        //val connector = ReactorClientHttpConnector(httpClient)
 
         return WebClient.builder()
             .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) }
