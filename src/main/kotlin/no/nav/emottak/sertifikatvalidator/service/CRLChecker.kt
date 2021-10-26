@@ -11,12 +11,9 @@ import no.nav.emottak.sertifikatvalidator.util.getEnvVar
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.http.HttpStatus
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.netty.http.client.HttpClient
-import reactor.netty.transport.ProxyProvider
 import java.io.InputStream
 import java.math.BigInteger
 import java.security.Provider
@@ -29,11 +26,7 @@ import java.util.*
 
 
 @Service
-class CRLChecker {
-
-    private var proxyHost: String? = System.getProperty("http.proxyHost")
-    private var proxyPort: String? = System.getProperty("http.proxyPort")
-    private var nonProxyHosts: String? = System.getProperty("http.nonProxyHosts")
+class CRLChecker(val webClient: WebClient) {
 
     private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap(2)
     private val buypassDN: X500Name = X500Name(getEnvVar("BUYPASS_DN", "CN=Buypass Class 3 Test4 CA 3,O=Buypass AS-983163327,C=NO"))
@@ -101,26 +94,9 @@ class CRLChecker {
 
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
         log.info("Henter URL $crlUrl")
-        val httpClient = HttpClient.create()//.proxyWithSystemProperties()
-        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
-            log.info("Setting proxy settings $proxyHost:$proxyPort")
-            httpClient.proxy { proxy: ProxyProvider.TypeSpec ->
-                proxy.type(ProxyProvider.Proxy.HTTP)
-                    .host(proxyHost!!)
-                    .port(proxyPort!!.toInt())
-                    .nonProxyHosts(nonProxyHosts!!)
-                    .build()
-            }
-        }
-
-        val connector = ReactorClientHttpConnector(httpClient)
-        val response = WebClient.builder().clientConnector(connector)
-            .baseUrl(crlUrl)
-            .codecs { configurer ->
-                configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)
-            }
-            .build()
+        val response = webClient
             .get()
+            .uri(crlUrl)
             //.accept(MediaType("application", "pkix-crl"), MediaType("application", "x-pkcs7-crl"))
             .retrieve()
             .bodyToMono(ByteArray::class.java)

@@ -46,7 +46,7 @@ import java.math.BigInteger
 import java.security.cert.X509Certificate
 
 @Service
-class OCSPChecker {
+class OCSPChecker(val webClient: WebClient) {
 
     private val ACCESS_IDENTIFIER_OCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
     private val SSN_POLICY_ID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
@@ -191,9 +191,9 @@ class OCSPChecker {
     }
 
     private fun postOCSPRequest(url: String, encoded: ByteArray): OCSPResp {
-        val webClient: WebClient = WebClient.create(url)
         val response = webClient
             .post()
+            .uri(url)
             .body(Mono.just(encoded), ByteArray::class.java)
             .accept(MediaType.APPLICATION_OCTET_STREAM)
             .exchangeToMono(this::handleResponse)
