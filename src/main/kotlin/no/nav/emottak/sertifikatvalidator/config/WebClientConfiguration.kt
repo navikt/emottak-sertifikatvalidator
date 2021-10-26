@@ -25,7 +25,7 @@ class WebClientConfiguration() {
                 proxy.type(ProxyProvider.Proxy.HTTP)
                     .host(proxyHost!!)
                     .port(proxyPort!!.toInt())
-                    .nonProxyHosts(nonProxyHosts!!)
+                    //.nonProxyHosts(nonProxyHosts!!)
             }
         }
 
