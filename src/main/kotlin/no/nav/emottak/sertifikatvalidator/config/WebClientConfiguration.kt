@@ -18,8 +18,17 @@ class WebClientConfiguration() {
 
     @Bean
     fun webClient(): WebClient {
-
         val httpClient = HttpClient.create()//.proxyWithSystemProperties()
+        configureProxy(httpClient)
+        val connector = ReactorClientHttpConnector(httpClient)
+
+        return WebClient.builder()
+            .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) }
+            .clientConnector(connector)
+            .build()
+    }
+
+    private fun configureProxy(httpClient: HttpClient) {
         if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank()) {
             log.info("Setting proxy settings $proxyHost:$proxyPort")
             httpClient.proxy { proxy: ProxyProvider.TypeSpec ->
@@ -30,25 +39,6 @@ class WebClientConfiguration() {
                     .nonProxyHostsPredicate(NonProxyHostsPredicate.fromWildcardedPattern(nonProxyHosts!!))
             }
         }
-
-        val connector = ReactorClientHttpConnector(httpClient)
-
-//        val httpClient = HttpClient()
-//        if (!proxyHost.isNullOrBlank() && !proxyPort.isNullOrBlank() && !nonProxyHosts.isNullOrBlank()) {
-//            val proxyConfig: ProxyConfiguration = httpClient.proxyConfiguration
-//            val proxy = HttpProxy(proxyHost, proxyPort!!.toInt())
-//            nonProxyHosts!!.split("|").forEach { nonProxyHost ->
-//                proxy.excludedAddresses.add(nonProxyHost)
-//            }
-//            proxyConfig.proxies.add(proxy)
-//        }
-//
-//        val connector: ClientHttpConnector = JettyClientHttpConnector(httpClient)
-
-        return WebClient.builder()
-            .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) }
-            .clientConnector(connector)
-            .build()
     }
 
 }
