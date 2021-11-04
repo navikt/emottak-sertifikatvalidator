@@ -76,25 +76,12 @@ private fun getOrganizationNumberFromRDN(rdns: List<Rdn>, type: String): String?
 }
 
 internal fun getSEIDVersion(certificate: X509Certificate): SEIDVersion {
-    val serialNumberOID = "OID.2.5.4.5"
-    val organizationIdentifierOID = "OID.2.4.5.97"
+    val seid2organizationIdentifierOID = "OID.2.4.5.97"
 
-    val subject = newLdapName(certificate.subjectX500Principal.getName(X500Principal.RFC1779))
+    val issuer = newLdapName(certificate.issuerX500Principal.getName(X500Principal.RFC1779))
 
-    if (isVirksomhetssertifikat(certificate)) {
-        subject.rdns.firstOrNull { rdn -> rdn.type.equals(organizationIdentifierOID) }?.let { return SEIDVersion.SEID20 }
-        return SEIDVersion.SEID10
-    }
-    else {
-        subject.rdns.firstOrNull { rdn -> rdn.type.equals(serialNumberOID, ignoreCase = true) }?.let { rdn ->
-            return if ((rdn.value as String?)?.startsWith("UN:NO", ignoreCase = true) == true) {
-                SEIDVersion.SEID20
-            } else {
-                SEIDVersion.SEID10
-            }
-        }
-    }
-    return SEIDVersion.UKJENT
+    issuer.rdns.firstOrNull { rdn -> rdn.type.equals(seid2organizationIdentifierOID) }?.let { return SEIDVersion.SEID20 }
+    return SEIDVersion.SEID10
 }
 
 internal fun isVirksomhetssertifikat(x509Certificate: X509Certificate): Boolean {
