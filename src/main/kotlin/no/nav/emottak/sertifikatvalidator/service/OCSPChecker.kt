@@ -261,7 +261,7 @@ class OCSPChecker(val webClient: WebClient) {
                 return cert
             }
         }
-        throw SertifikatError(HttpStatus.BAD_REQUEST, "Fant ikke issuer sertifikat")
+        throw SertifikatError(HttpStatus.BAD_REQUEST, "Fant ikke issuer sertifikat for '$certificateIssuer'")
     }
 
     private fun addNonceExtension(extensionsGenerator: ExtensionsGenerator) {

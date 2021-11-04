@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import java.security.cert.X509Certificate
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
@@ -70,10 +72,9 @@ private fun createPersonSertifikatInfo(
     beskrivelse: String,
     ssn: String?
 ) = SertifikatInfo(
-    serienummer = certificate.serialNumber.toString(),
+    certificate = certificate,
     status = status,
     type = SertifikatType.PERSONLIG,
-    utsteder = certificate.issuerX500Principal.name,
     orgnummer = null,
     fnr = ssn,
     beskrivelse = beskrivelse,
@@ -85,10 +86,9 @@ private fun createVirksomhetssertifikatInfo(
     status: SertifikatStatus,
     beskrivelse: String
 ) = SertifikatInfo(
-    serienummer = certificate.serialNumber.toString(),
+    certificate = certificate,
     status = status,
     type = SertifikatType.VIRKSOMHET,
-    utsteder = certificate.issuerX500Principal.name,
     orgnummer = getOrganizationNumber(certificate),
     fnr = null,
     beskrivelse = beskrivelse,
@@ -122,15 +122,18 @@ internal fun createSertifikatInfoFromOCSPResponse(
         beskrivelse = "can't establish certificate status, could be revoked"
     }
     return SertifikatInfo(
-        serienummer = certificate.serialNumber.toString(),
+        certificate = certificate,
         status = status,
         type = getSertifikatType(certificate),
-        utsteder = certificate.issuerX500Principal.name,
         orgnummer = getOrganizationNumber(certificate),
         fnr = ssn,
         beskrivelse = beskrivelse,
         feilmelding = null
     )
+}
+
+internal fun formatDate(date: Date): String {
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale("nb")).format(date)
 }
 
 private fun getSertifikatType(certificate: X509Certificate): SertifikatType {

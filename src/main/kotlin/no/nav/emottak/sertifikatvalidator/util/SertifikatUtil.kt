@@ -2,6 +2,7 @@ package no.nav.emottak.sertifikatvalidator.util
 
 import no.nav.emottak.sertifikatvalidator.FEIL_X509CERTIFICATE
 import no.nav.emottak.sertifikatvalidator.model.KeyUsage
+import no.nav.emottak.sertifikatvalidator.model.SEIDVersion
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler.Companion.getCertificateChain
 import org.bouncycastle.asn1.ASN1InputStream
@@ -72,6 +73,28 @@ private fun getOrganizationNumberFromRDN(rdns: List<Rdn>, type: String): String?
         }
     }
     return null
+}
+
+internal fun getSEIDVersion(certificate: X509Certificate): SEIDVersion {
+    val serialNumberOID = "OID.2.5.4.5"
+    val organizationIdentifierOID = "OID.2.4.5.97"
+
+    val subject = newLdapName(certificate.subjectX500Principal.getName(X500Principal.RFC1779))
+
+    if (isVirksomhetssertifikat(certificate)) {
+        subject.rdns.firstOrNull { rdn -> rdn.type.equals(organizationIdentifierOID) }?.let { return SEIDVersion.SEID20 }
+        return SEIDVersion.SEID10
+    }
+    else {
+        subject.rdns.firstOrNull { rdn -> rdn.type.equals(serialNumberOID, ignoreCase = true) }?.let { rdn ->
+            return if ((rdn.value as String?)?.startsWith("UN:NO", ignoreCase = true) == true) {
+                SEIDVersion.SEID20
+            } else {
+                SEIDVersion.SEID10
+            }
+        }
+    }
+    return SEIDVersion.UKJENT
 }
 
 internal fun isVirksomhetssertifikat(x509Certificate: X509Certificate): Boolean {
