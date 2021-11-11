@@ -1,7 +1,7 @@
 package no.nav.emottak.sertifikatvalidator.service
 
 import no.nav.emottak.sertifikatvalidator.ALL_REVOCATION_CHECKS_DISABLED
-import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
+import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
@@ -109,7 +109,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 }
                 else {
                     log.info("OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
-                    throw SertifikatError(HttpStatus.BAD_REQUEST, OCSP_SIGNATURE_VERIFICATION_FAILED, sertifikatOCSPValideringFeilet(certificate))
+                    throw SertifikatError(HttpStatus.BAD_REQUEST, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(certificate))
                 }
             }
         } else {

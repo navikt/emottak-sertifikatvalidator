@@ -1,6 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.util
 
-import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
+import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
@@ -51,7 +51,7 @@ internal fun sertifikatUtloept(certificate: X509Certificate) =
     createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
 
 internal fun sertifikatOCSPValideringFeilet(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UKJENT, OCSP_SIGNATURE_VERIFICATION_FAILED)
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UKJENT, OCSP_VERIFICATION_UKJENT_FEIL)
 
 internal fun sertifikatOK(certificate: X509Certificate, ssn: String?) =
     createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
