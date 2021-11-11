@@ -1,9 +1,11 @@
 package no.nav.emottak.sertifikatvalidator.util
 
+import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
+import no.nav.emottak.sertifikatvalidator.UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.RevocationReason
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
@@ -48,11 +50,17 @@ internal fun sertifikatIkkeGyldigEnda(certificate: X509Certificate) =
 internal fun sertifikatUtloept(certificate: X509Certificate) =
     createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
 
+internal fun sertifikatOCSPValideringFeilet(certificate: X509Certificate) =
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UKJENT, OCSP_SIGNATURE_VERIFICATION_FAILED)
+
 internal fun sertifikatOK(certificate: X509Certificate, ssn: String?) =
     createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
 
 internal fun sertifikatOK(certificate: X509Certificate) =
     createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
+
+internal fun sertifikatUkjentFeil(certificate: X509Certificate) =
+    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UKJENT, UKJENT_FEIL, null)
 
 internal fun createSertifikatInfoFromCertificate(certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String) =
     createSertifikatInfoFromCertificate(certificate, status, beskrivelse, null)
