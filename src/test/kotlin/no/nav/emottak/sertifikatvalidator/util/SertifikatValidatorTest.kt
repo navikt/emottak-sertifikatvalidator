@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -48,7 +47,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.REVOKERT)
@@ -95,7 +94,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -110,7 +109,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, Instant.now())
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -126,7 +125,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -169,7 +168,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -185,7 +184,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -201,7 +200,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.REVOKERT)
@@ -233,7 +232,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -249,7 +248,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -265,7 +264,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -281,7 +280,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -297,7 +296,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(any())).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
