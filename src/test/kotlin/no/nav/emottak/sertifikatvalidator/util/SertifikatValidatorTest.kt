@@ -22,8 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.jwt.JwtDecoder
 import java.security.cert.X509Certificate
 import java.time.Instant
+import javax.servlet.Filter
 
 
 @SpringBootTest
@@ -38,6 +40,12 @@ class SertifikatValidatorTest {
 
     @MockBean
     private lateinit var crlChecker: CRLChecker
+
+    @MockBean
+    private lateinit var jwtDecoder: JwtDecoder
+
+    @MockBean(name = "springSecurityFilterChain")
+    private lateinit var springSecurityFilterChain: Filter
 
     @Test
     //@Disabled
