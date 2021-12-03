@@ -6,6 +6,7 @@ import no.nav.emottak.sertifikatvalidator.util.createResponseEntity
 import no.nav.emottak.sertifikatvalidator.util.createX509Certificate
 import no.nav.emottak.sertifikatvalidator.util.decodeBase64
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,7 +21,7 @@ import java.util.Date
 @RequestMapping("/api")
 class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator) {
 
-    @PostMapping("/valider/sertifikat")
+    @PostMapping("/valider/sertifikat", consumes = [ MediaType.TEXT_PLAIN_VALUE ], produces = [ MediaType.APPLICATION_JSON_VALUE ])
     fun validerSertifikat(@RequestBody certificateBase64: String,
                           @RequestParam("gyldighetsdato") @DateTimeFormat(pattern ="yyyy-MM-dd") date: Date?
     ): ResponseEntity<SertifikatInfo> {

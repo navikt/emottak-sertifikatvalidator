@@ -80,7 +80,11 @@ internal fun getSEIDVersion(certificate: X509Certificate): SEIDVersion {
 
     val issuer = newLdapName(certificate.issuerX500Principal.getName(X500Principal.RFC1779))
 
-    issuer.rdns.firstOrNull { rdn -> rdn.type.equals(seid2organizationIdentifierOID) }?.let { return SEIDVersion.SEID20 }
+    issuer.rdns.firstOrNull { rdn -> rdn.type.equals(seid2organizationIdentifierOID) }?.let {
+        if (it.value.toString().startsWith("NTRNO", ignoreCase = true)) {
+            return SEIDVersion.SEID20
+        }
+    }
     return SEIDVersion.SEID10
 }
 
