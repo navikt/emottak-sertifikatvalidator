@@ -21,7 +21,7 @@ schedule:
   cron:
     crl: '0 0 0 * * *'
     cache:
-      ssn: '0 0 * * * *'
+      ssn: '0 0 1 * * *'
 
 management:
   endpoint:
