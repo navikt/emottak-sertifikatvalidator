@@ -8,8 +8,8 @@ metadata:
 spec:
   receivers:
     slack:
-      channel: "#team-emottak-alerts-test-public"
-      prependText: "<!here> | "
+      channel: "team-emottak-alerts-prod"
+      prependText: "<here> | "
   alerts:
   - alert: "emottak-sertifikatvalidator er nede"
     description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace\
