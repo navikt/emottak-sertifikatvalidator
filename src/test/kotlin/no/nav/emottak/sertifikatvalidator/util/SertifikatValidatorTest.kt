@@ -48,7 +48,7 @@ class SertifikatValidatorTest {
     private lateinit var springSecurityFilterChain: Filter
 
     @Test
-    //@Disabled
+    @Disabled //TODO
     fun `Revokert sertifikat ikke validert`() {
         val filnavn = "classpath:x509/aage_baertoemmer_nonrep_9423.cer"
         val gyldighetsdato = Instant.ofEpochMilli(1273500994000)
@@ -201,7 +201,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
-    //@Disabled
+    @Disabled //TODO
     fun `Buypass revokert sertifikat ikke validert`() {
         val filnavn = "classpath:buypass/buypass_revoked.cer"
         val gyldighetsdato = Instant.now()
