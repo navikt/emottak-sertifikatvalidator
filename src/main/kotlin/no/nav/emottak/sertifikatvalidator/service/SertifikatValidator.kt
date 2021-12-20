@@ -58,11 +58,13 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun checkCurrentCertificate(certificate: X509Certificate): SertifikatInfo {
-        return sjekkSertifikat(certificate = certificate, sjekkCRL = true, sjekkOCSP = true)
+        //TODO return sjekkSertifikat(certificate = certificate, sjekkCRL = true, sjekkOCSP = true)
+        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun checkLegacyCertificate(certificate: X509Certificate): SertifikatInfo {
-        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = true)
+        //TODO return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = true)
+        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun certificateValidAtTime(certificate: X509Certificate, instant: Instant): Boolean {
