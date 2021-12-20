@@ -79,9 +79,10 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun sjekkSertifikat(certificate: X509Certificate, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
-        if (!sjekkCRL && !sjekkOCSP) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(certificate))
-        }
+        //TODO
+        //if (!sjekkCRL && !sjekkOCSP) {
+        //    throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(certificate))
+        //}
         return if (isVirksomhetssertifikat(certificate)) {
             sjekkVirksomhetssertifikat(certificate, sjekkCRL, sjekkOCSP)
         } else {
