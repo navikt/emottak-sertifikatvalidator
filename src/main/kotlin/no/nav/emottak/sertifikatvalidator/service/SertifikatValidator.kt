@@ -1,6 +1,5 @@
 package no.nav.emottak.sertifikatvalidator.service
 
-import no.nav.emottak.sertifikatvalidator.ALL_REVOCATION_CHECKS_DISABLED
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
@@ -40,7 +39,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             val certificateValidNow = certificateValidAtTime(certificate, Instant.now())
             val certificateValidAtGivenTime = certificateValidAtTime(certificate, dateInstant)
             if (!certificateValidNow && !certificateValidAtGivenTime) {
-                throw SertifikatError(HttpStatus.BAD_REQUEST, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(certificate))
+                throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(certificate))
             }
             else if (!certificateValidNow) {
                 return checkLegacyCertificate(certificate)
@@ -51,9 +50,9 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
 
         } catch (e: CertificateExpiredException) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, SERTIFIKAT_IKKE_GYLDIG_LENGER, sertifikatUtloept(certificate), e)
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_LENGER, sertifikatUtloept(certificate), e)
         } catch (e: CertificateNotYetValidException) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, SERTIFIKAT_IKKE_GYLDIG_ENDA, sertifikatIkkeGyldigEnda(certificate), e)
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_ENDA, sertifikatIkkeGyldigEnda(certificate), e)
         }
     }
 
@@ -92,7 +91,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkOmSertifikatErSelvsignert(certificate: X509Certificate) {
         if (isSelfSigned(certificate)) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(certificate))
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(certificate))
         }
     }
 
@@ -112,7 +111,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 }
                 else {
                     log.info("OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
-                    throw SertifikatError(HttpStatus.BAD_REQUEST, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(certificate))
+                    throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(certificate))
                 }
             }
         } else {

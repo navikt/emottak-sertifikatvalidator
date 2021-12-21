@@ -74,7 +74,7 @@ class SertifikatValidatorTest {
         val exception = assertThrows<SertifikatError> {
             sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         }
-        assert(exception.statusCode == HttpStatus.BAD_REQUEST)
+        assert(exception.statusCode == HttpStatus.UNPROCESSABLE_ENTITY)
         assert(exception.message == SERTIFIKAT_IKKE_GYLDIG)
     }
 
@@ -90,7 +90,7 @@ class SertifikatValidatorTest {
             sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         }
 
-        assert(exception.statusCode == HttpStatus.BAD_REQUEST)
+        assert(exception.statusCode == HttpStatus.UNPROCESSABLE_ENTITY)
         assert(exception.message == SERTIFIKAT_SELF_SIGNED)
     }
 
@@ -227,7 +227,7 @@ class SertifikatValidatorTest {
         val exception = assertThrows<SertifikatError> {
             sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
         }
-        assert(exception.statusCode == HttpStatus.BAD_REQUEST)
+        assert(exception.statusCode == HttpStatus.UNPROCESSABLE_ENTITY)
         assert(exception.message == SERTIFIKAT_IKKE_GYLDIG)
         log.info("SertifikatInfo: ${exception.sertifikatInfo}")
     }

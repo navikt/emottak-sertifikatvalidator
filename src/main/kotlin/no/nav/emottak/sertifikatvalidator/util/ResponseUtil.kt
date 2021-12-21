@@ -27,9 +27,9 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntit
     return when(sertifikatInfo.status) {
         SertifikatStatus.OK -> createResponseEntity(HttpStatus.OK, sertifikatInfo)
         SertifikatStatus.FEIL_MED_INPUT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
-        SertifikatStatus.UTGAATT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
-        SertifikatStatus.REVOKERT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
-        SertifikatStatus.FEIL_MED_SERTIFIKAT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
+        SertifikatStatus.UTGAATT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo)
+        SertifikatStatus.REVOKERT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo)
+        SertifikatStatus.FEIL_MED_SERTIFIKAT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo)
         SertifikatStatus.FEIL_MED_TJENESTEN -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo)
         SertifikatStatus.UKJENT -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo)
     }
