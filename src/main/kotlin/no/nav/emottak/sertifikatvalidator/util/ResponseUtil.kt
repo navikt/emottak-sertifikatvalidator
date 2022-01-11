@@ -1,8 +1,13 @@
 package no.nav.emottak.sertifikatvalidator.util
 
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
+import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_FEILET
+import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_MANGLER
+import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_UKJENT
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
+import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_REVOKERT
+import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_REVOKERT
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
 import no.nav.emottak.sertifikatvalidator.UKJENT_FEIL
@@ -20,7 +25,8 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import java.security.cert.X509Certificate
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 
 internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
@@ -113,21 +119,22 @@ internal fun createSertifikatInfoFromOCSPResponse(
     val beskrivelse: String
     if (certStatus == null) {
         status = SertifikatStatus.OK
-        beskrivelse = "Certificate not revoked"
+        beskrivelse = SERTIFIKAT_IKKE_REVOKERT
     } else if (certStatus is RevokedStatus) {
         status = SertifikatStatus.REVOKERT
         beskrivelse = if (certStatus.hasRevocationReason()) {
             RevocationReason.getRevocationReason(certStatus.revocationReason)
         } else {
-            "Revokert, Ukjent årsak"
+            REVOKASJON_STATUS_MANGLER
         }
-        log.warn("Certificate is revoked: $beskrivelse")
+        log.warn("$SERTIFIKAT_REVOKERT: $beskrivelse")
     } else if (certStatus is UnknownStatus) {
-        log.warn("certificate status unknown, could be revoked")
-        beskrivelse = "certificate status unknown, could be revoked"
+
+        log.warn(REVOKASJON_STATUS_UKJENT)
+        beskrivelse = REVOKASJON_STATUS_UKJENT
     } else {
-        log.warn("can't establish certificate status, could be revoked")
-        beskrivelse = "can't establish certificate status, could be revoked"
+        log.warn(REVOKASJON_STATUS_FEILET)
+        beskrivelse = REVOKASJON_STATUS_FEILET
     }
     return SertifikatInfo(
         certificate = certificate,
