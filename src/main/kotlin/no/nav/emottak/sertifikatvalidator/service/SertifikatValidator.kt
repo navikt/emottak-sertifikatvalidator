@@ -1,5 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.service
 
+import no.nav.emottak.sertifikatvalidator.ALL_REVOCATION_CHECKS_DISABLED
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
@@ -57,13 +58,15 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun checkCurrentCertificate(certificate: X509Certificate): SertifikatInfo {
-        //TODO return sjekkSertifikat(certificate = certificate, sjekkCRL = true, sjekkOCSP = true)
-        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
+        //TODO
+        return sjekkSertifikat(certificate = certificate, sjekkCRL = true, sjekkOCSP = true)
+        //return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun checkLegacyCertificate(certificate: X509Certificate): SertifikatInfo {
-        //TODO return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = true)
-        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
+        //TODO
+        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = true)
+        //return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun certificateValidAtTime(certificate: X509Certificate, instant: Instant): Boolean {
@@ -79,8 +82,9 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikat(certificate: X509Certificate, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         if (!sjekkCRL && !sjekkOCSP) {
-            return sertifikatOK(certificate)
-            //TODO throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(certificate))
+            //return sertifikatOK(certificate)
+            //TODO
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(certificate))
         }
         return if (isVirksomhetssertifikat(certificate)) {
             sjekkVirksomhetssertifikat(certificate, sjekkCRL, sjekkOCSP)

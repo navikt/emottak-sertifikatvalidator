@@ -201,7 +201,7 @@ class SertifikatValidatorTest {
     }
 
     @Test
-    @Disabled //TODO
+    //@Disabled //TODO
     fun `Buypass revokert sertifikat ikke validert`() {
         val filnavn = "classpath:buypass/buypass_revoked.cer"
         val gyldighetsdato = Instant.now()
