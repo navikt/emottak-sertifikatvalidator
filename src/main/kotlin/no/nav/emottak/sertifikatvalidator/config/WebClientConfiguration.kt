@@ -34,9 +34,9 @@ class WebClientConfiguration() {
             httpClient.proxy { proxy: ProxyProvider.TypeSpec ->
                 proxy.type(ProxyProvider.Proxy.HTTP)
                     .host(proxyHost!!)
-                    .port(proxyPort!!.toInt())
+                    .port(proxyPort!!.toInt()).build()
                     //.nonProxyHosts(nonProxyHosts!!.replace("*", ".*?"))
-                    .nonProxyHostsPredicate(NonProxyHostsPredicate.fromWildcardedPattern(nonProxyHosts!!))
+                    //.nonProxyHostsPredicate(NonProxyHostsPredicate.fromWildcardedPattern(nonProxyHosts!!))
             }
         }
     }
