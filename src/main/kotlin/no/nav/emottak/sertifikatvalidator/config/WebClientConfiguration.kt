@@ -37,7 +37,7 @@ class WebClientConfiguration() {
                     .port(proxyPort!!.toInt()).build()
                     //.nonProxyHosts(nonProxyHosts!!.replace("*", ".*?"))
                     //.nonProxyHostsPredicate(NonProxyHostsPredicate.fromWildcardedPattern(nonProxyHosts!!))
-            }
+            }.wiretap(true)
         }
     }
 
