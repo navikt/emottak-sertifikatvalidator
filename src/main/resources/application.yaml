@@ -6,11 +6,7 @@ springdoc:
 
 logging:
   level:
-    web: DEBUG
-    reactor:
-      netty:
-        http:
-          client: DEBUG
+    web: INFO
 
 spring:
   security:
