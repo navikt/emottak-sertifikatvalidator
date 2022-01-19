@@ -2,6 +2,8 @@ package no.nav.emottak.sertifikatvalidator.service
 
 import no.nav.emottak.sertifikatvalidator.FAILED_TO_GENERATE_REVOCATION_REQUEST
 import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
+import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_EMPTY_RESPONSE
+import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
@@ -37,9 +39,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.server.ResponseStatusException
-import reactor.core.publisher.Mono
 import java.io.IOException
 import java.math.BigInteger
 import java.security.cert.X509Certificate
@@ -186,30 +186,16 @@ class OCSPChecker(val webClient: RestTemplate) {
     private fun getOCSPUrl(certificate: X509Certificate): String {
         val url = getAuthorityInfoAccess(certificate, ACCESS_IDENTIFIER_OCSP)
         log.info("OCSP URL: $url")
-        return url //"http://ocsp.test4.buypass.no/ocsp/BPClass3T4CA3"
+        return url
     }
 
     private fun postOCSPRequest(url: String, encoded: ByteArray): OCSPResp {
-        val response = webClient.postForEntity(url, encoded, ByteArray::class.java)
-//            .post()
-//            .uri(url)
-//            .body(Mono.just(encoded), ByteArray::class.java)
-//            .accept(MediaType.APPLICATION_OCTET_STREAM)
-//            .exchangeToMono(this::handleResponse)
-//            .block() ?: throw RuntimeException()
-
-        return getOCSPResp(response.body!!)
-    }
-
-    private fun handleResponse(clientResponse: ClientResponse): Mono<ByteArray>
-    {
-        if (clientResponse.statusCode().isError) {
-            log.error("HttpStatusCode = ${clientResponse.statusCode()}")
-            log.error("HttpHeaders = ${clientResponse.headers().asHttpHeaders()}")
-            log.error("ResponseBody = ${clientResponse.bodyToMono(String::class.java)}")
+        val response = try {
+            webClient.postForEntity(url, encoded, ByteArray::class.java)
+        } catch (e: Exception) {
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL)
         }
-
-        return clientResponse.bodyToMono(ByteArray::class.java)
+        return getOCSPResp(response.body ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_EMPTY_RESPONSE) )
     }
 
     private fun createOCSPRequest(certificate: X509Certificate, ocspResponderCertificate: X509Certificate): OCSPReq {

@@ -96,13 +96,7 @@ class CRLChecker(val webClient: RestTemplate) {
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
         log.info("Henter URL $crlUrl")
         val response = webClient.getForEntity(crlUrl, ByteArray::class.java)
-//            .get()
-//            .uri(crlUrl)
-//            //.accept(MediaType("application", "pkix-crl"), MediaType("application", "x-pkcs7-crl"))
-//            .retrieve()
-//            .bodyToMono(ByteArray::class.java)
-            //.retryWhen(Retry.backoff(3, Duration.ofSeconds(5)))
-        return ByteArrayInputStream(response.body!!)//.block()?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
+        return ByteArrayInputStream(response.body ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL"))
     }
 
     private fun createCRL(input: InputStream?): X509CRL {
