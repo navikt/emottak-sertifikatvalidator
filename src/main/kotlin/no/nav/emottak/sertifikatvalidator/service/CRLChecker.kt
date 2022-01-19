@@ -13,7 +13,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.client.RestTemplate
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.math.BigInteger
 import java.security.Provider
@@ -22,11 +23,11 @@ import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509CRL
 import java.security.cert.X509CRLEntry
-import java.util.*
+import java.util.Date
 
 
 @Service
-class CRLChecker(val webClient: WebClient) {
+class CRLChecker(val webClient: RestTemplate) {
 
     private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap(2)
     private val buypassDN: X500Name = X500Name(getEnvVar("BUYPASS_DN", "CN=Buypass Class 3 Test4 CA 3,O=Buypass AS-983163327,C=NO"))
@@ -94,14 +95,14 @@ class CRLChecker(val webClient: WebClient) {
 
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
         log.info("Henter URL $crlUrl")
-        val response = webClient
-            .get()
-            .uri(crlUrl)
-            //.accept(MediaType("application", "pkix-crl"), MediaType("application", "x-pkcs7-crl"))
-            .retrieve()
-            .bodyToMono(ByteArray::class.java)
+        val response = webClient.getForEntity(crlUrl, ByteArray::class.java)
+//            .get()
+//            .uri(crlUrl)
+//            //.accept(MediaType("application", "pkix-crl"), MediaType("application", "x-pkcs7-crl"))
+//            .retrieve()
+//            .bodyToMono(ByteArray::class.java)
             //.retryWhen(Retry.backoff(3, Duration.ofSeconds(5)))
-        return response.block()?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
+        return ByteArrayInputStream(response.body!!)//.block()?.inputStream() ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL")
     }
 
     private fun createCRL(input: InputStream?): X509CRL {

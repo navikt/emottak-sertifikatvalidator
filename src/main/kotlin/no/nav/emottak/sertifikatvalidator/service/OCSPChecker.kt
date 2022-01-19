@@ -35,10 +35,9 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.ClientResponse
-import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.io.IOException
@@ -46,7 +45,7 @@ import java.math.BigInteger
 import java.security.cert.X509Certificate
 
 @Service
-class OCSPChecker(val webClient: WebClient) {
+class OCSPChecker(val webClient: RestTemplate) {
 
     private val ACCESS_IDENTIFIER_OCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
     private val SSN_POLICY_ID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
@@ -191,15 +190,15 @@ class OCSPChecker(val webClient: WebClient) {
     }
 
     private fun postOCSPRequest(url: String, encoded: ByteArray): OCSPResp {
-        val response = webClient
-            .post()
-            .uri(url)
-            .body(Mono.just(encoded), ByteArray::class.java)
-            .accept(MediaType.APPLICATION_OCTET_STREAM)
-            .exchangeToMono(this::handleResponse)
-            .block() ?: throw RuntimeException()
+        val response = webClient.postForEntity(url, encoded, ByteArray::class.java)
+//            .post()
+//            .uri(url)
+//            .body(Mono.just(encoded), ByteArray::class.java)
+//            .accept(MediaType.APPLICATION_OCTET_STREAM)
+//            .exchangeToMono(this::handleResponse)
+//            .block() ?: throw RuntimeException()
 
-        return getOCSPResp(response)
+        return getOCSPResp(response.body!!)
     }
 
     private fun handleResponse(clientResponse: ClientResponse): Mono<ByteArray>
