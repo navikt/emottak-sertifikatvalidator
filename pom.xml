@@ -39,11 +39,17 @@
 			<artifactId>jetty-reactive-httpclient</artifactId>
 			<version>3.0.4</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.eclipse.jetty</groupId>-->
-<!--			<artifactId>jetty-client</artifactId>-->
-<!--			<version>11.0.6</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-client</artifactId>
+			<version>11.0.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-io</artifactId>
+			<version>11.0.7</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
