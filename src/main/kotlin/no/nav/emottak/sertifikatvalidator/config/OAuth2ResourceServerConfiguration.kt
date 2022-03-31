@@ -50,7 +50,7 @@ class OAuth2ResourceServerConfiguration(
         )
         val audienceValidator: OAuth2TokenValidator<Jwt> =
             OAuth2TokenValidator<Jwt> { token ->
-                if (token.getAudience().stream()
+                if (token.audience.stream()
                         .anyMatch(acceptedAudience::contains)
                 ) OAuth2TokenValidatorResult.success() else OAuth2TokenValidatorResult.failure(
                     OAuth2Error(

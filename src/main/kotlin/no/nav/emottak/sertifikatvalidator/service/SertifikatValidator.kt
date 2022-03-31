@@ -49,7 +49,6 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 return checkCurrentCertificate(certificate)
             }
 
-
         } catch (e: CertificateExpiredException) {
             throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_LENGER, sertifikatUtloept(certificate), e)
         } catch (e: CertificateNotYetValidException) {

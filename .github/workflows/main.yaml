@@ -7,21 +7,8 @@ env:
   "IMAGE": "docker.pkg.github.com/${{ github.repository }}/emottak-sertifikatvalidator:${{\
     \ github.sha }}"
 jobs:
-  "snyk":
-    name: "snyk"
-    runs-on: "ubuntu-18.04"
-    steps:
-      - uses: actions/checkout@master
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
-          args: --org=emottak
   "build":
     name: "build"
-    needs: "snyk"
     runs-on: "ubuntu-18.04"
     steps:
     - uses: "actions/checkout@v2"
