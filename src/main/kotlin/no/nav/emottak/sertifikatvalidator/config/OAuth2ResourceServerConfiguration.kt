@@ -26,7 +26,15 @@ class OAuth2ResourceServerConfiguration(
             .csrf()
             .disable()
             .authorizeRequests()
-            .antMatchers("/internal/**")
+            .antMatchers(
+                "/internal/health/liveness",
+                "/internal/health/readiness",
+                "/internal/prometheus",
+                "/internal/swagger",
+                "/internal/swagger-ui/*",
+                "/internal/api-docs/swagger-config",
+                "/internal/api-docs",
+                "/api/server/klient/status")
             .permitAll()
             .anyRequest()
             .fullyAuthenticated()
@@ -50,17 +58,17 @@ class OAuth2ResourceServerConfiguration(
         )
         val audienceValidator: OAuth2TokenValidator<Jwt> =
             OAuth2TokenValidator<Jwt> { token ->
-                if (token.audience.stream()
-                        .anyMatch(acceptedAudience::contains)
-                ) OAuth2TokenValidatorResult.success() else OAuth2TokenValidatorResult.failure(
-                    OAuth2Error(
-                        "invalid_token", String.format(
-                            "None of required audience values '%s' found in token",
-                            acceptedAudience
-                        ),
-                        null
+                if (token.audience.stream().anyMatch(acceptedAudience::contains)) {
+                    OAuth2TokenValidatorResult.success()
+                } else {
+                    OAuth2TokenValidatorResult.failure(
+                        OAuth2Error(
+                            "invalid_token",
+                            "None of required audience values $acceptedAudience found in token",
+                            null
+                        )
                     )
-                )
+                }
             }
         return DelegatingOAuth2TokenValidator(issuerValidator, audienceValidator)
     }
