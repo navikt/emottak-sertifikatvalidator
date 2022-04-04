@@ -4,8 +4,7 @@ on:
     branches:
     - "master"
 env:
-  "IMAGE": "docker.pkg.github.com/${{ github.repository }}/emottak-sertifikatvalidator:${{\
-    \ github.sha }}"
+  "IMAGE": "ghcr.io/${{ github.repository }}:${{ github.sha }}"
 jobs:
   "build":
     name: "build"
