@@ -2,7 +2,9 @@ name: "Build and deploy emottak-sertifikatvalidator"
 on:
   push:
     branches:
-    - "master"
+      - "master"
+    paths-ignore:
+      - '**.md'
 env:
   "IMAGE": "docker.pkg.github.com/${{ github.repository }}/emottak-sertifikatvalidator:${{ github.sha }}"
 jobs:
