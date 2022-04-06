@@ -2,7 +2,7 @@ name: "Build and deploy emottak-sertifikatvalidator"
 on:
   push:
     branches:
-      - "master"
+      - "klient_refaktorering"
     paths-ignore:
       - '**.md'
 env:
