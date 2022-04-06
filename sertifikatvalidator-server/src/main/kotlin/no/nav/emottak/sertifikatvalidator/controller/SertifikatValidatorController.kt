@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
 import java.util.Date
 
@@ -25,12 +26,12 @@ import java.util.Date
 @RequestMapping("/api")
 class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator) {
 
-    @PostMapping("/valider/sertifikat", consumes = [ MediaType.TEXT_PLAIN_VALUE ], produces = [ MediaType.APPLICATION_JSON_VALUE ])
-    fun validerSertifikat(@RequestBody certificateBase64: String,
+    @PostMapping("/valider/sertifikat", consumes = [ MediaType.MULTIPART_FORM_DATA_VALUE ], produces = [ MediaType.APPLICATION_JSON_VALUE ])
+    fun validerSertifikat(@RequestBody certificate: MultipartFile,
                           @RequestParam("gyldighetsdato") @DateTimeFormat(pattern ="yyyy-MM-dd") date: Date?
     ): ResponseEntity<SertifikatInfo> {
-        val decodedCertificate = decodeBase64(certificateBase64)
-        val x509Certificate = createX509Certificate(decodedCertificate.inputStream())
+        //val decodedCertificate = decodeBase64(certificate.inputStream)
+        val x509Certificate = createX509Certificate(certificate.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, validityDate)
         return createResponseEntity(sertifikatInfo)
