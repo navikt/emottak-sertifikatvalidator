@@ -50,7 +50,7 @@ open class SertifikatValidator(): MicroserviceClient() {
         messageId: String,
     ): MultipartBody {
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
-        requestBody.addFormDataPart("certificateBase64", messageId, sertifikat.toRequestBody())
+        requestBody.addFormDataPart("certificate", messageId, sertifikat.toRequestBody())
         return requestBody.build()
     }
 
