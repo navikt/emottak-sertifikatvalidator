@@ -17,7 +17,7 @@ open class SertifikatValidator(): MicroserviceClient() {
     var buildMode = false
 
     fun valider(sertifikat: ByteArray): SertifikatInfo {
-        return valider(sertifikat, UUID.randomUUID().toString(), Instant.now())
+        return valider(sertifikat, UUID.randomUUID().toString())
     }
 
     fun valider(sertifikat: ByteArray, messageId: String): SertifikatInfo {
@@ -35,6 +35,7 @@ open class SertifikatValidator(): MicroserviceClient() {
                 .url("$url?gyldighetsdato=${formatInstant(gyldighetsdato)}")
                 .addHeader("Content-Type", "multipart/form-data")
                 .addHeader("Accept", "application/json")
+                .addHeader("Authorization", "Bearer ${accessToken}")
                 .post(requestBody)
                 .build()
             return postRequestToService(url, request, SertifikatInfo::class.java)
