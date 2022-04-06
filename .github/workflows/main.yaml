@@ -23,6 +23,10 @@ jobs:
         "java-version": "16"
     - name: "compile and run tests"
       run: "mvn install"
+    - name: "Run Maven release"
+      run: ./release.sh
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     - name: "Build and publish Docker image"
       run: "docker build --pull --tag ${IMAGE} . && echo $GITHUB_TOKEN | docker login\
         \ --username $GITHUB_REPOSITORY --password-stdin https://docker.pkg.github.com\
