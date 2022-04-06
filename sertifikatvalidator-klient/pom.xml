@@ -19,6 +19,8 @@
         <jackson-databind.version>2.13.2.1</jackson-databind.version>
         <okhttp.version>4.9.3</okhttp.version>
 
+        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -82,6 +84,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -111,6 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -123,6 +127,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
