@@ -1,0 +1,28 @@
+name: Verify build
+
+on:
+  pull_request:
+    paths-ignore:
+      - .gitignore
+      - README.md
+
+jobs:
+  build:
+    name: build and verify
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup cache
+        uses: actions/cache@v3.0.1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Setup JDK
+        uses: actions/setup-java@v3.1.0
+        with:
+          java-version: 16
+          distribution: temurin
+      - name: compile, run tests and verify
+        run: mvn verify -e --no-transfer-progress
