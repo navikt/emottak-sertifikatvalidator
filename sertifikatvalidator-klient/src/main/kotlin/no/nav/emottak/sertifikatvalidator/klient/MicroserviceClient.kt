@@ -12,6 +12,9 @@ import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic
 import com.nimbusds.oauth2.sdk.auth.Secret
 import com.nimbusds.oauth2.sdk.id.ClientID
 import com.nimbusds.oauth2.sdk.token.AccessToken
+import no.nav.emottak.sertifikatvalidator.BACKEND_APPLICATION_NAME
+import no.nav.emottak.sertifikatvalidator.BACKEND_CLUSTER_NAME
+import no.nav.emottak.sertifikatvalidator.BACKEND_NAMESPACE
 import no.nav.emottak.sertifikatvalidator.SERVICE_URL_DEV
 import no.nav.emottak.sertifikatvalidator.SERVICE_URL_PROD
 import no.nav.emottak.sertifikatvalidator.model.ServerStatus
@@ -26,9 +29,9 @@ import java.util.Date
 abstract class MicroserviceClient {
 
     private val clientVersion: String? = javaClass.`package`.implementationVersion
-    protected val objectMapper = jacksonObjectMapper()
-    protected var httpClient = OkHttpClient.Builder().build()
-    protected val accessToken = AccessTokenHolder().token.value
+    private val objectMapper = jacksonObjectMapper()
+    private var httpClient = OkHttpClient.Builder().build()
+    protected val accessToken: String = AccessTokenHolder().token.value
 
     abstract fun checkServerCompatibility(): ServerStatus
 
@@ -96,12 +99,9 @@ fun getEnvVar(varName: String, defaultValue: String? = null) =
 
 private val clientId = getEnvVar("AZURE_APP_CLIENT_ID")
 private val clientSecret = getEnvVar("AZURE_APP_CLIENT_SECRET")
-private val clusterName = "dev-fss"
-private val namespace = "team-emottak"
-private val applicationName = "emottak-sertifikatvalidator"
-private val scope = "api://$clusterName.$namespace.$applicationName/.default"
 private val tenant = getEnvVar("AZURE_APP_TENANT_ID")
 private val tokenEndpoint = "https://login.microsoftonline.com/$tenant/oauth2/v2.0/token"
+private const val scope = "api://$BACKEND_CLUSTER_NAME.$BACKEND_NAMESPACE.$BACKEND_APPLICATION_NAME/.default"
 
 private class AccessTokenHolder {
 
@@ -142,9 +142,8 @@ private class AccessTokenHolder {
             this.accessToken = accessToken
             log.info("AccessToken refreshed")
         } catch (e: Exception) {
-            log.error("Failed to get access token with error ${e.localizedMessage}. Check debug logging if problem persists.")
-            log.debug("Failed to get access token from $tokenEndpoint with client $clientId")
-            log.debug("Failed to get access token", e)
+            log.error("Failed to refresh access token with error ${e.localizedMessage}. Check debug logging if problem persists.")
+            log.debug("Failed to refresh access token from $tokenEndpoint with client $clientId", e)
         }
     }
 

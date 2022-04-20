@@ -35,7 +35,7 @@ open class SertifikatValidator(): MicroserviceClient() {
                 .url("$url?gyldighetsdato=${formatInstant(gyldighetsdato)}")
                 .addHeader("Content-Type", "multipart/form-data")
                 .addHeader("Accept", "application/json")
-                .addHeader("Authorization", "Bearer ${accessToken}")
+                .addHeader("Authorization", "Bearer $accessToken")
                 .post(requestBody)
                 .build()
             return postRequestToService(url, request, SertifikatInfo::class.java)

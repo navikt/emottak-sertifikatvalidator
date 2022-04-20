@@ -31,3 +31,7 @@ const val SERVICE_URL_PROD =
     "https://emottak-sertifikatvalidator.intern.nav.no/api//valider/sertifikat"
 const val SERVICE_URL_DEV =
     "https://emottak-sertifikatvalidator.dev.intern.nav.no/api/valider/sertifikat"
+
+const val BACKEND_CLUSTER_NAME = "dev-fss"
+const val BACKEND_NAMESPACE = "team-emottak"
+const val BACKEND_APPLICATION_NAME = "emottak-sertifikatvalidator"
