@@ -6,13 +6,17 @@ import no.nav.emottak.sertifikatvalidator.REVOCATION_REASON_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.CRLHolder
 import no.nav.emottak.sertifikatvalidator.model.CRLRevocationInfo
+import no.nav.emottak.sertifikatvalidator.model.CRLs
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
-import no.nav.emottak.sertifikatvalidator.util.getEnvVar
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -23,23 +27,22 @@ import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509CRL
 import java.security.cert.X509CRLEntry
+import java.time.LocalDateTime
 import java.util.Date
 
 
-@Service
+@Component
+@ConfigurationProperties(prefix = "application")
 class CRLChecker(val webClient: RestTemplate) {
 
-    private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap(2)
-    private val buypassDN: X500Name = X500Name(getEnvVar("BUYPASS_DN", "CN=Buypass Class 3 Test4 CA 3,O=Buypass AS-983163327,C=NO"))
-    //private val buypassDN: String = getEnvVar("BUYPASS_DN", "CN=Buypass Class 3 Test4 CA 1,O=Buypass,C=NO")
-    private val buypassCRL: String = getEnvVar("BUYPASS_CRL", "http://crl.test4.buypass.no/crl/BPClass3T4CA3.crl")
-    private val commfidesDN: X500Name = X500Name(getEnvVar("COMMFIDES_DN", "C=NO, O=Commfides Norge AS - 988 312 495, OU=CPN Enterprise-Norwegian SHA256 CA- TEST, OU=Commfides Trust Environment(C) 2014 Commfides Norge AS - TEST, CN=Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"))
-    private val commfidesCRL: String = getEnvVar("COMMFIDES_CRL", "http://crl1.test.commfides.com/CommfidesEnterprise-SHA256.crl")
-
+    @Autowired
+    private lateinit var crls: CRLs
+    private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap()
     private val provider: Provider = BouncyCastleProvider()
 
-    init {
-        createCrls()
+    @EventListener(ApplicationReadyEvent::class)
+    fun initializeCRLs() {
+        updateCRLsPeriodically()
     }
 
     fun getCRLRevocationInfo(issuer: String, serialNumber: BigInteger): CRLRevocationInfo {
@@ -52,15 +55,23 @@ class CRLChecker(val webClient: RestTemplate) {
         ) } ?: CRLRevocationInfo(serialNumber = serialNumber, revoked = false, revocationReason = "Ikke revokert")
     }
 
-    @Scheduled(cron = "\${schedule.cron.crl}")
+    @Scheduled(cron = "\${schedule.cron.cache.crl}")
     private fun updateCRLsPeriodically() {
-        log.info("Oppdaterer CRL-filer")
-        crlFiles.forEach { crlEntry ->
-            if (isExpired(crlEntry.value.crl)) {
-                log.info("${crlEntry.key}: CRL er utløpt, henter oppdatering")
-                createCrl(crlEntry.value)
+        log.info("Periodisk oppdatering av CRL (${crls.crlList.size} CRLer konfigurert)")
+        log.info("Periodisk oppdatering oppdaterer ALLE CRLer")
+        var updateCounter = 0
+        crls.crlList.forEach { crl ->
+            val x500Name = X500Name(crl.dn)
+            log.info("${crl.url}: Henter oppdatering")
+            try {
+                createCrl(crl)
+                updateCounter++
+            } catch (e: Exception) {
+                log.warn("${crl.url}: Oppdatering feilet", e)
             }
+            crlFiles[x500Name] = crl
         }
+        log.info("Periodisk oppdatering $updateCounter CRLer oppdatert")
     }
 
     private fun getRevokedCertificate(issuer: String, serialNumber: BigInteger): X509CRLEntry? {
@@ -70,31 +81,40 @@ class CRLChecker(val webClient: RestTemplate) {
     fun getCrl(issuer: String): X509CRL {
         val issuerX500Name = X500Name(issuer)
         val crlHolder = crlFiles[issuerX500Name] ?: throw SertifikatError(HttpStatus.BAD_REQUEST, "Ukjent sertifikatutsteder $issuer, kunne ikke sjekke CRL")
-        val crlFile: X509CRL = crlHolder.crl
-        return if (isExpired(crlFile)) {
+        return if (isCRLNullOrExpired(crlHolder)) {
             createCrl(crlHolder)
         }
         else {
-            crlFile
+            crlHolder.crl ?: createCrl(crlHolder)
         }
     }
 
-    private fun isExpired(crlFile: X509CRL): Boolean {
-        return crlFile.nextUpdate.before(Date())
+    private fun isCRLNullOrExpired(crlHolder: CRLHolder): Boolean {
+        val crl = crlHolder.crl
+        if (crl == null) {
+            log.info("${crlHolder.url}: CRL eksisterer ikke, hent ny")
+            return true
+        }
+        else if (crl.nextUpdate.before(Date())) {
+            log.info("${crlHolder.url}: CRL er utløpt, hent oppdatering")
+            return true
+        }
+        return false
     }
 
     private fun createCrl(crlHolder: CRLHolder): X509CRL {
         try {
-            crlHolder.crl = createCRL(getCrlFileFromUrl(crlHolder.crlUrl))
-            log.info("${crlHolder.crlUrl}: CRL oppdatert")
+            val crl = createCRL(getCrlFileFromUrl(crlHolder.url))
+            crlHolder.crl = crl
+            crlHolder.updatedDate = LocalDateTime.now()
+            log.info("${crlHolder.url}: CRL oppdatert")
+            return crl
         } catch (e: Exception) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "${crlHolder.crlUrl}: Kunne ikke oppdatere CRL", e)
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "${crlHolder.url}: Kunne ikke oppdatere CRL", e)
         }
-        return crlHolder.crl
     }
 
     private fun getCrlFileFromUrl(crlUrl: String): InputStream {
-        log.info("Henter URL $crlUrl")
         val response = webClient.getForEntity(crlUrl, ByteArray::class.java)
         return ByteArrayInputStream(response.body ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "$crlUrl: Feil ved henting av CRL fra URL"))
     }
@@ -110,21 +130,4 @@ class CRLChecker(val webClient: RestTemplate) {
         }
     }
 
-    private fun createCrls() {
-        log.info("Henter CRL info")
-        updateCrlForDN(buypassDN, buypassCRL)
-        updateCrlForDN(commfidesDN, commfidesCRL)
-        log.info("CRL oppdatert med ${crlFiles.size} lister")
-    }
-
-    private fun updateCrlForDN(dn: X500Name, crlUrl: String) {
-        try {
-            log.info("Henter CRL: ${dn}, ${crlUrl}")
-            val crlHolder = CRLHolder(dn, crlUrl, createCRL(getCrlFileFromUrl(crlUrl)))
-            log.info("CRL hentet: ${dn}, ${crlUrl}, ${crlHolder.updatedDate}")
-            crlFiles[dn] = crlHolder
-        } catch (e: Exception) {
-            log.error("Henting av CRL for $dn på $crlUrl feilet", e)
-        }
-    }
 }
