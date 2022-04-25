@@ -57,11 +57,3 @@ spec:
       value: /var/run/secrets/nais.io/vault/keystore_pwd
     - name: SIGNER_SUBJECT_DN
       value: {{signer.dn}}
-    - name: BUYPASS_DN
-      value: {{buypass.dn}}
-    - name: BUYPASS_CRL
-      value: {{buypass.crl}}
-    - name: COMMFIDES_DN
-      value: {{commfides.dn}}
-    - name: COMMFIDES_CRL
-      value: {{commfides.crl}}

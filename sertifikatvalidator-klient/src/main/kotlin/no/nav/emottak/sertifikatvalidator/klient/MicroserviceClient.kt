@@ -31,7 +31,12 @@ abstract class MicroserviceClient {
     private val clientVersion: String? = javaClass.`package`.implementationVersion
     private val objectMapper = jacksonObjectMapper()
     private var httpClient = OkHttpClient.Builder().build()
-    protected val accessToken: String = AccessTokenHolder().token.value
+    private val accessTokenHolder = AccessTokenHolder();
+    //protected val accessToken: String = AccessTokenHolder().token.value
+
+    protected fun getAccessToken(): String {
+        return accessTokenHolder.token!!.value
+    }
 
     abstract fun checkServerCompatibility(): ServerStatus
 
@@ -105,11 +110,11 @@ private const val scope = "api://$BACKEND_CLUSTER_NAME.$BACKEND_NAMESPACE.$BACKE
 
 private class AccessTokenHolder {
 
-    private lateinit var accessToken: AccessToken
+    private var accessToken: AccessToken? = null
 
-    init {
-        refreshAccessToken()
-    }
+//    init {
+//        refreshAccessToken()
+//    }
 
     var token = run {
         if (accessTokenExpired()) {
@@ -148,7 +153,8 @@ private class AccessTokenHolder {
     }
 
     private fun accessTokenExpired(): Boolean {
-        val jwt = SignedJWT.parse(accessToken.value)
+        val token = accessToken ?: return true
+        val jwt = SignedJWT.parse(token.value)
         val expirationTime = jwt.jwtClaimsSet.expirationTime
         log.debug("AccessToken expires at $expirationTime")
         if (expirationTime.before(Date(Instant.now().epochSecond + 900))) {
