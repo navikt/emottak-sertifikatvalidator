@@ -110,7 +110,6 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 sjekkOCSP(certificate)
             }
             catch (e: Exception) {
-                log.warn("OCSP sjekk feilet", e)
                 if(sjekkCRL) {
                     log.info("OCSP sjekk feilet, sjekker CRL")
                     sjekkCRL(certificate, null)
