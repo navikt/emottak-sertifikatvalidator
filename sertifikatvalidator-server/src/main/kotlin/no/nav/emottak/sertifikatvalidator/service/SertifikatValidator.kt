@@ -133,11 +133,15 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkCRL(certificate: X509Certificate, ssn: String?): SertifikatInfo {
         val crlDistributionPoint = certificate.getExtensionValue(Extension.cRLDistributionPoints.toString())
+        val crlDistributionPoints = CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))
         log.info("-------------------------------------------------")
         log.info("Skal sjekke CRL, følgende verdier finnes i sertifikat")
         log.info("Dersom dette feiler, men ikke skulle gjort det, vurder å oppdatere application properties med disse verdiene")
         log.info("DN: ${certificate.issuerX500Principal.name}")
-        log.info("CRL: ${CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))}")
+        log.debug("CRL: $crlDistributionPoints")
+        crlDistributionPoints.distributionPoints.forEach {
+            log.info("CRL: ${it.distributionPoint.name}")
+        }
         log.info("-------------------------------------------------")
 
         val crlRevocationInfo =

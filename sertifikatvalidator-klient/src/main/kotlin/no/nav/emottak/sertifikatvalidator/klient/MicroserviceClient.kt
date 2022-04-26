@@ -73,12 +73,15 @@ abstract class MicroserviceClient {
         responseClass: Class<T>
     ): T {
         try {
-            log.debug("Kaller $url")
+            log.info("Validerer sertifikat...")
+            log.debug("Validerer sertifikat mot $url")
             val response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
-                log.debug("Kall mot $url gjennomført")
+                log.info("Sertifikat OK")
+                log.debug("Sertifikatvalidering gjennomført, sertifikat OK")
             } else {
-                log.warn("${response.code} feil ved kall til $url")
+                log.warn("Sertifikat ikke OK, feilkode ${response.code}")
+                log.debug("Feilkode ${response.code} fra $url")
             }
             return objectMapper.readValue(response.body?.string(), responseClass)
         } catch (e: Exception) {
