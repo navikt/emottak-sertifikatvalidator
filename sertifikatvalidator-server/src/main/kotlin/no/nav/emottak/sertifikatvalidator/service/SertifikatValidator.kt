@@ -42,14 +42,12 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
             val certificateValidNow = certificateValidAtTime(certificate, Instant.now())
             val certificateValidAtGivenTime = certificateValidAtTime(certificate, dateInstant)
-            if (!certificateValidNow && !certificateValidAtGivenTime) {
-                throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(certificate))
-            }
-            else if (!certificateValidNow) {
-                return checkLegacyCertificate(certificate)
-            }
-            else {
-                return checkCurrentCertificate(certificate)
+            return if (!certificateValidNow && !certificateValidAtGivenTime) {
+                throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(certificate), false)
+            } else if (!certificateValidNow) {
+                checkLegacyCertificate(certificate)
+            } else {
+                checkCurrentCertificate(certificate)
             }
 
         } catch (e: CertificateExpiredException) {

@@ -40,6 +40,17 @@ class SertifikatError : RuntimeException {
 
     constructor(statusCode: HttpStatus,
                 message: String,
+                sertifikatInfo: SertifikatInfo,
+                logStackTrace: Boolean
+    ): super(message) {
+        this.statusCode = statusCode
+        this.sertifikatInfo = sertifikatInfo
+        this.certificate = null
+        this.logStackTrace = logStackTrace
+    }
+
+    constructor(statusCode: HttpStatus,
+                message: String,
                 exception: Exception): super(message, exception) {
         this.statusCode = statusCode
         this.sertifikatInfo = null
