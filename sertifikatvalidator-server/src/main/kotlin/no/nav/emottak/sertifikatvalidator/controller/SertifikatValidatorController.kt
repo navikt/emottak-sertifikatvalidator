@@ -30,7 +30,6 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
     fun validerSertifikat(@RequestBody certificate: MultipartFile,
                           @RequestParam("gyldighetsdato") @DateTimeFormat(pattern ="yyyy-MM-dd") date: Date?
     ): ResponseEntity<SertifikatInfo> {
-        //val decodedCertificate = decodeBase64(certificate.inputStream)
         val x509Certificate = createX509Certificate(certificate.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
         val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, validityDate)

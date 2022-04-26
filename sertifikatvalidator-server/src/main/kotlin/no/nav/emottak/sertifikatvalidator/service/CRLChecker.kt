@@ -32,16 +32,15 @@ import java.util.Date
 
 
 @Component
-@ConfigurationProperties(prefix = "application")
 class CRLChecker(val webClient: RestTemplate) {
 
     @Autowired
-    private lateinit var crls: CRLs
+    internal lateinit var crls: CRLs
     private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap()
     private val provider: Provider = BouncyCastleProvider()
 
     @EventListener(ApplicationReadyEvent::class)
-    fun initializeCRLs() {
+    fun updateCRLs() {
         updateCRLsPeriodically()
     }
 
