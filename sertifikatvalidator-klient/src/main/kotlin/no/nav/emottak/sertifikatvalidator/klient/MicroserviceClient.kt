@@ -32,10 +32,9 @@ abstract class MicroserviceClient {
     private val objectMapper = jacksonObjectMapper()
     private var httpClient = OkHttpClient.Builder().build()
     private val accessTokenHolder = AccessTokenHolder();
-    //protected val accessToken: String = AccessTokenHolder().token.value
 
     protected fun getAccessToken(): String {
-        return accessTokenHolder.token!!.value
+        return accessTokenHolder.getToken().value
     }
 
     abstract fun checkServerCompatibility(): ServerStatus
@@ -115,21 +114,20 @@ private class AccessTokenHolder {
 
     private var accessToken: AccessToken? = null
 
-//    init {
-//        refreshAccessToken()
-//    }
-
-    var token = run {
-        if (accessTokenExpired()) {
-            refreshAccessToken()
-            accessToken
-        } else {
-            accessToken
+    fun getToken(): AccessToken {
+        if (accessToken == null) {
+            accessToken = refreshAccessToken()
         }
+        else if (accessTokenExpired()) {
+            accessToken = refreshAccessToken()
+        }
+        return accessToken!!
     }
 
-    private fun refreshAccessToken() {
+    private fun refreshAccessToken(attempt: Int = 1): AccessToken {
         log.info("AccessToken refreshing")
+        val retries = 3
+        val waitTime = 5
         val clientGrant: AuthorizationGrant = ClientCredentialsGrant()
         val clientID = ClientID(clientId)
         val clientSecret = Secret(clientSecret)
@@ -147,11 +145,16 @@ private class AccessTokenHolder {
             }
             val successResponse = response.toSuccessResponse()
             val accessToken = successResponse.tokens.accessToken
-            this.accessToken = accessToken
             log.info("AccessToken refreshed")
+            return accessToken
         } catch (e: Exception) {
             log.error("Failed to refresh access token with error ${e.localizedMessage}. Check debug logging if problem persists.")
             log.debug("Failed to refresh access token from $tokenEndpoint with client $clientId", e)
+            if (attempt <= retries) {
+                Thread.sleep((waitTime * 1000).toLong())
+                return refreshAccessToken(attempt+1)
+            }
+            else throw RuntimeException("Refresh AccessToken failed after $attempt tries... try again later")
         }
     }
 
@@ -159,12 +162,13 @@ private class AccessTokenHolder {
         val token = accessToken ?: return true
         val jwt = SignedJWT.parse(token.value)
         val expirationTime = jwt.jwtClaimsSet.expirationTime
-        log.debug("AccessToken expires at $expirationTime")
-        if (expirationTime.before(Date(Instant.now().epochSecond + 900))) {
-            log.debug("AccessToken expires soon, should get a new one")
-            return true
+        val certificateTimeThreshold = Date(Instant.now().epochSecond + 900)
+        log.info("AccessToken expires at $expirationTime, update if time before $certificateTimeThreshold")
+        return if (expirationTime.before(certificateTimeThreshold)) {
+            log.info("AccessToken expires soon, should get a new one")
+            true
         } else {
-            return false
+            false
         }
     }
 

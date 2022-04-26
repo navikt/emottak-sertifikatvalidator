@@ -113,7 +113,7 @@ class OCSPChecker(val webClient: RestTemplate) {
     private fun getSsn(ssnExtension: Extension?): String {
         return if (ssnExtension != null) {
             try {
-                String(ssnExtension.extnValue.encoded).replace(Regex("[^0-9]"), "")
+                String(ssnExtension.extnValue.encoded).replace(Regex("\\D"), "")
             } catch (e: IOException) {
                 throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to extract SSN", e)
             }
