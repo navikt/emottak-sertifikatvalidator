@@ -165,7 +165,7 @@ private class AccessTokenHolder {
         val token = accessToken ?: return true
         val jwt = SignedJWT.parse(token.value)
         val expirationTime = jwt.jwtClaimsSet.expirationTime
-        val certificateTimeThreshold = Date(Instant.now().epochSecond + 900)
+        val certificateTimeThreshold = Date.from(Instant.now().plusSeconds(900))
         log.info("AccessToken expires at $expirationTime, update if time before $certificateTimeThreshold")
         return if (expirationTime.before(certificateTimeThreshold)) {
             log.info("AccessToken expires soon, should get a new one")
