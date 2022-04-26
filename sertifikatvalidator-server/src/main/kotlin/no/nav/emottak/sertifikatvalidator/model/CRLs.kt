@@ -16,3 +16,15 @@ data class CRLHolder(
     var crl: X509CRL?,
     var updatedDate: LocalDateTime = LocalDateTime.now()
 )
+
+data class CRLStatus(
+    val dn: String,
+    val url: String,
+    val updatedDate: LocalDateTime
+) {
+    constructor(crlHolder: CRLHolder) : this(
+        dn = crlHolder.dn,
+        url = crlHolder.url,
+        updatedDate = crlHolder.updatedDate
+    )
+}

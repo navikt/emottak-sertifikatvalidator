@@ -1,6 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.controller
 
-import no.nav.emottak.sertifikatvalidator.model.CRLs
+import no.nav.emottak.sertifikatvalidator.model.CRLStatus
 import no.nav.emottak.sertifikatvalidator.model.ServerStatus
 import no.nav.emottak.sertifikatvalidator.service.CRLChecker
 import org.springframework.http.HttpStatus
@@ -30,15 +30,16 @@ class ApplicationStatusController(val crlChecker: CRLChecker) {
 
     @GetMapping("/crl", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.OK)
-    fun getCrlList(): ResponseEntity<CRLs> {
-        return ResponseEntity.ok(crlChecker.crls)
+    fun getCrlList(): ResponseEntity<List<CRLStatus>> {
+        val crlsList = crlChecker.crls.crlList.stream().map { crlHolder -> CRLStatus(crlHolder = crlHolder) }.toList()
+        return ResponseEntity.ok(crlsList)
     }
 
     @GetMapping("/crl/update", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.OK)
-    fun updateCrlList(): ResponseEntity<CRLs> {
+    fun updateCrlList(): ResponseEntity<List<CRLStatus>> {
         crlChecker.updateCRLs()
-        return ResponseEntity.ok(crlChecker.crls)
+        return getCrlList()
     }
 
 }
