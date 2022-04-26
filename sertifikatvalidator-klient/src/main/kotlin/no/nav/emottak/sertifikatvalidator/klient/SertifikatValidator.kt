@@ -40,7 +40,8 @@ open class SertifikatValidator(): MicroserviceClient() {
                 .build()
             return postRequestToService(url, request, SertifikatInfo::class.java)
         } catch (e: Exception) {
-            log.error("Ukjent feil ved kall til $url", e)
+            log.error(e.localizedMessage)
+            log.debug(e.localizedMessage, e)
             throw e
         }
     }

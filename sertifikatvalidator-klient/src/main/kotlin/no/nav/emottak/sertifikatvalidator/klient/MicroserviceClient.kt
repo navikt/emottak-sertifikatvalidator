@@ -78,13 +78,16 @@ abstract class MicroserviceClient {
             if (response.isSuccessful) {
                 log.info("Sertifikat OK")
                 log.debug("Sertifikatvalidering gjennomført, sertifikat OK")
+            } else if (response.code == 401) {
+                log.warn("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
+                throw RuntimeException("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
             } else {
                 log.warn("Sertifikat ikke OK, feilkode ${response.code}")
                 log.debug("Feilkode ${response.code} fra $url")
             }
             return objectMapper.readValue(response.body?.string(), responseClass)
         } catch (e: Exception) {
-            log.error("Ukjent feil ved kall til $url", e)
+            log.debug("Feil ved kall til $url", e)
             throw e
         }
     }
