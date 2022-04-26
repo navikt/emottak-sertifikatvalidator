@@ -47,3 +47,5 @@ ekstern:
       url: "http://crl.test4.buypass.no/crl/BPClass3T4CA3.crl"
     - dn: "C=NO, O=Commfides Norge AS - 988 312 495, OU=CPN Enterprise-Norwegian SHA256 CA- TEST, OU=Commfides Trust Environment(C) 2014 Commfides Norge AS - TEST, CN=Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"
       url: "http://crl1.test.commfides.com/CommfidesEnterprise-SHA256.crl"
+    - dn: "CN=Buypass Class 2 CA 2,O=Buypass AS-983163327,C=NO"
+      url: "http://crl.buypass.no/crl/BPClass2CA2.crl"
