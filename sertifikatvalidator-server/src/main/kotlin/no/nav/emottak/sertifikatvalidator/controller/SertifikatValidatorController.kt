@@ -36,15 +36,4 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         return createResponseEntity(sertifikatInfo)
     }
 
-    @GetMapping("/server/klient/status", produces = [MediaType.APPLICATION_JSON_VALUE])
-    @ResponseStatus(HttpStatus.OK)
-    fun klientServerStatus(@RequestParam("buildMode") buildMode: Boolean?): ResponseEntity<ServerStatus> {
-        val validator = no.nav.emottak.sertifikatvalidator.klient.SertifikatValidator()
-        val serverStatus = validator.checkServerCompatibility()
-        return if (serverStatus.kompatibel) {
-            ResponseEntity.ok(serverStatus)
-        } else {
-            ResponseEntity.internalServerError().body(serverStatus)
-        }
-    }
 }
