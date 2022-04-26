@@ -57,10 +57,12 @@ class OCSPChecker(val webClient: RestTemplate) {
             val ocspResponderCertificate = getOcspResponderCertificate(certificateIssuer)
 
             val request: OCSPReq = createOCSPRequest(certificate, ocspResponderCertificate)
-            val response = postOCSPRequest(getOCSPUrl(certificate), request.getEncoded())
+            val response = postOCSPRequest(getOCSPUrl(certificate), request.encoded)
             decodeResponse(response, certificate, request.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce), ocspResponderCertificate)
+        } catch (e: SertifikatError) {
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, e.localizedMessage, certificate, e, e.logStackTrace)
         } catch (e: Exception) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "error", certificate, e)
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, e.localizedMessage, certificate, e)
         }
     }
 
@@ -246,7 +248,8 @@ class OCSPChecker(val webClient: RestTemplate) {
                 return cert
             }
         }
-        throw SertifikatError(HttpStatus.BAD_REQUEST, "Fant ikke issuer sertifikat for '$certificateIssuer'")
+        log.warn("Fant ikke issuer sertifikat for '$certificateIssuer', kan ikke gjøre OCSP-spørringer mot denne CAen")
+        throw SertifikatError(HttpStatus.BAD_REQUEST, "Fant ikke issuer sertifikat for '$certificateIssuer'", false)
     }
 
     private fun addNonceExtension(extensionsGenerator: ExtensionsGenerator) {

@@ -18,7 +18,14 @@ internal class SertifikatExceptionHandler {
 
     @ExceptionHandler(SertifikatError::class)
     fun handleSertifikatError(req: HttpServletRequest, ex: SertifikatError): ResponseEntity<SertifikatInfo?> {
-        log.error(ex.message, ex)
+        if (ex.logStackTrace) {
+            log.error(ex.message, ex)
+        }
+        else {
+            log.error(ex.message)
+            log.debug("Logging level satt til DEBUG, logger stacktrace likevel")
+            log.debug(ex.message, ex)
+        }
         val body = createResponseBody(ex)
         return ResponseEntity.status(ex.statusCode).body(body)
     }
