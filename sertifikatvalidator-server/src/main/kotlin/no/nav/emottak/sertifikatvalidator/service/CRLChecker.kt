@@ -110,7 +110,6 @@ class CRLChecker(val webClient: RestTemplate) {
             val crl = createCRL(getCrlFileFromUrl(crlHolder.url))
             crlHolder.crl = crl
             crlHolder.updatedDate = LocalDateTime.now()
-            log.info("${crlHolder.url}: CRL oppdatert")
             return crl
         } catch (e: Exception) {
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "${crlHolder.url}: Kunne ikke oppdatere CRL", e)
