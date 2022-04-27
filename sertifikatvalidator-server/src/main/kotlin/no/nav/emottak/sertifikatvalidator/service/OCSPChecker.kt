@@ -197,6 +197,7 @@ class OCSPChecker(val webClient: RestTemplate) {
         val response = try {
             webClient.postForEntity(url, encoded, ByteArray::class.java)
         } catch (e: Exception) {
+            log.error("OCSP feilet ${e.localizedMessage}", e)
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL)
         }
         return getOCSPResp(response.body ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_EMPTY_RESPONSE) )
