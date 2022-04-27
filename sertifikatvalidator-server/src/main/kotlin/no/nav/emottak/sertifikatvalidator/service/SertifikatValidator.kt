@@ -105,11 +105,11 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             }
             catch (e: Exception) {
                 if(sjekkCRL) {
-                    log.info("OCSP sjekk feilet, sjekker CRL")
+                    log.warn("OCSP sjekk feilet, sjekker CRL", e)
                     sjekkCRL(sertifikatData, null)
                 }
                 else {
-                    log.info("OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
+                    log.warn("OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
                     throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(sertifikatData))
                 }
             }
