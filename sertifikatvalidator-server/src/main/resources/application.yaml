@@ -43,12 +43,10 @@ management:
 
 ekstern:
   crlList:
+      # Buypass
     - name: "Buypass Class 3 Test4 CA 3"
       dn: "CN=Buypass Class 3 Test4 CA 3, O=Buypass AS-983163327, C=NO"
       url: "http://crl.test4.buypass.no/crl/BPClass3T4CA3.crl"
-    - name: "Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"
-      dn: "C=NO, O=Commfides Norge AS - 988 312 495, OU=CPN Enterprise-Norwegian SHA256 CA- TEST, OU=Commfides Trust Environment(C) 2014 Commfides Norge AS - TEST, CN=Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"
-      url: "http://crl1.test.commfides.com/CommfidesEnterprise-SHA256.crl"
     - name: "Buypass Class 2 CA 2"
       dn: "CN=Buypass Class 2 CA 2,O=Buypass AS-983163327,C=NO"
       url: "http://crl.buypass.no/crl/BPClass2CA2.crl"
@@ -61,3 +59,7 @@ ekstern:
     - name: "Buypass Class 3 Test4 CA G2 HT Person"
       dn: "CN=Buypass Class 3 Test4 CA G2 HT Person, O=Buypass AS, OID.2.5.4.97=NTRNO-983163327, C=NO"
       url: "http://crl.test4.buypassca.com/BPCl3CaG2HTPS.crl"
+      # Commfides
+    - name: "Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"
+      dn: "C=NO, O=Commfides Norge AS - 988 312 495, OU=CPN Enterprise-Norwegian SHA256 CA- TEST, OU=Commfides Trust Environment(C) 2014 Commfides Norge AS - TEST, CN=Commfides CPN Enterprise-Norwegian SHA256 CA - TEST"
+      url: "http://crl1.test.commfides.com/CommfidesEnterprise-SHA256.crl"

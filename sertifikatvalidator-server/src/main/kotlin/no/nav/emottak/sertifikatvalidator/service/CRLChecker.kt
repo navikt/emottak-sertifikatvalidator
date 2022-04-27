@@ -56,21 +56,25 @@ class CRLChecker(val webClient: RestTemplate) {
 
     @Scheduled(cron = "\${schedule.cron.cache.crl}")
     private fun updateCRLsPeriodically() {
+        log.info("----------------------------")
         log.info("Periodisk oppdatering av CRL (${crls.crlList.size} CRLer konfigurert)")
         log.info("Periodisk oppdatering oppdaterer ALLE CRLer")
         var updateCounter = 0
         crls.crlList.forEach { crl ->
             val x500Name = X500Name(crl.dn)
-            log.info("${crl.url}: Henter oppdatering")
+            log.info(crl.name)
+            log.info(" - Henter oppdatert CRL fra ${crl.url}")
             try {
                 createCrl(crl)
                 updateCounter++
             } catch (e: Exception) {
-                log.warn("${crl.url}: Oppdatering feilet", e)
+                log.warn(" - Oppdatering av CRL feilet fra ${crl.url}", e)
             }
             crlFiles[x500Name] = crl
+            log.info(" - Oppdatert CRL fra ${crl.url}")
         }
         log.info("Periodisk oppdatering $updateCounter CRLer oppdatert")
+        log.info("----------------------------")
     }
 
     private fun getRevokedCertificate(issuer: String, serialNumber: BigInteger): X509CRLEntry? {
