@@ -70,27 +70,27 @@ abstract class MicroserviceClient {
     protected fun <T> postRequestToService(
         url: String,
         request: Request,
-        responseClass: Class<T>
+        responseClass: Class<T>,
+        uuid: String
     ): T {
         try {
-            log.info("Validerer sertifikat...")
+            log.info("UUID $uuid validerer sertifikat...")
             log.debug("Validerer sertifikat mot $url")
             val response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
-                log.info("Sertifikat OK")
-                log.debug("Sertifikatvalidering gjennomført, sertifikat OK")
+                log.info("UUID $uuid sertifikat OK")
             } else if (response.code == 400) {
-                log.warn("Sertifikatvalidering svarte med BadRequest(400), sjekk input")
+                log.warn("UUID $uuid Sertifikatvalidering svarte med BadRequest(400), sjekk input")
             } else if (response.code == 401) {
-                log.warn("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
+                log.warn("UUID $uuid Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
                 throw RuntimeException("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
             } else {
-                log.warn("Sertifikat ikke OK, feilkode ${response.code}")
+                log.warn("UUID $uuid Sertifikat ikke OK, feilkode ${response.code}")
                 log.debug("Feilkode ${response.code} fra $url")
             }
             return objectMapper.readValue(response.body?.string(), responseClass)
         } catch (e: MismatchedInputException) {
-            log.warn("Respons fra sertifikatvalidering er ikke gyldig: ${e.localizedMessage}")
+            log.warn("UUID $uuid Respons fra sertifikatvalidering er ikke gyldig: ${e.localizedMessage}")
             log.debug("Respons fra sertifikatvalidering ($url) er ikke gyldig", e)
             throw e
         } catch (e: Exception) {
