@@ -35,7 +35,8 @@ import java.util.Date
 class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLChecker, val ssnCache: SsnCache) {
 
 
-    internal fun validateCertificate(certificate: X509Certificate, dateInstant: Instant): SertifikatInfo {
+    internal fun validateCertificate(certificate: X509Certificate, dateInstant: Instant, uuid: String): SertifikatInfo {
+        log.info("$uuid sertifikatvalidering startet")
         log.debug(certificate.toString())
         try {
             sjekkOmSertifikatErSelvsignert(certificate)
@@ -43,10 +44,13 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             val certificateValidNow = certificateValidAtTime(certificate, Instant.now())
             val certificateValidAtGivenTime = certificateValidAtTime(certificate, dateInstant)
             return if (!certificateValidNow && !certificateValidAtGivenTime) {
+                log.warn("$uuid sertifikatvalidering feilet")
                 throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(certificate), false)
             } else if (!certificateValidNow) {
+                log.info("$uuid sertifikatvalidering sjekker legacy sertifikat")
                 checkLegacyCertificate(certificate)
             } else {
+                log.info("$uuid sertifikatvalidering sjekker aktivt sertifikat")
                 checkCurrentCertificate(certificate)
             }
 
@@ -58,15 +62,11 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun checkCurrentCertificate(certificate: X509Certificate): SertifikatInfo {
-        //TODO
         return sjekkSertifikat(certificate = certificate, sjekkCRL = true, sjekkOCSP = true)
-        //return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun checkLegacyCertificate(certificate: X509Certificate): SertifikatInfo {
-        //TODO
         return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = true)
-        //return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun certificateValidAtTime(certificate: X509Certificate, instant: Instant): Boolean {
@@ -82,8 +82,6 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikat(certificate: X509Certificate, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         if (!sjekkCRL && !sjekkOCSP) {
-            //return sertifikatOK(certificate)
-            //TODO
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(certificate))
         }
         return if (isVirksomhetssertifikat(certificate)) {
@@ -95,7 +93,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkOmSertifikatErSelvsignert(certificate: X509Certificate) {
         if (isSelfSigned(certificate)) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(certificate))
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(certificate), false)
         }
     }
 
