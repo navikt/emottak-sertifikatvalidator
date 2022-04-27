@@ -13,6 +13,7 @@ import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
 import no.nav.emottak.sertifikatvalidator.UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.RevocationReason
+import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
 import no.nav.emottak.sertifikatvalidator.model.SertifikatType
@@ -44,55 +45,55 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntit
 private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo) =
     ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 
-internal fun sertifikatSelvsignert(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
+internal fun sertifikatSelvsignert(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)
 
-internal fun sertifikatRevokert(certificate: X509Certificate, revokeringsBeskrivelse: String) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.REVOKERT, revokeringsBeskrivelse)
+internal fun sertifikatRevokert(sertifikatData: SertifikatData, revokeringsBeskrivelse: String) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.REVOKERT, revokeringsBeskrivelse)
 
-internal fun sertifikatIkkeGyldigEnda(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_ENDA)
+internal fun sertifikatIkkeGyldigEnda(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_ENDA)
 
-internal fun sertifikatUtloept(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
+internal fun sertifikatUtloept(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.UTGAATT, SERTIFIKAT_IKKE_GYLDIG_LENGER)
 
-internal fun sertifikatOCSPValideringFeilet(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UKJENT, OCSP_VERIFICATION_UKJENT_FEIL)
+internal fun sertifikatOCSPValideringFeilet(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.UKJENT, OCSP_VERIFICATION_UKJENT_FEIL)
 
-internal fun sertifikatOK(certificate: X509Certificate, ssn: String?) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
+internal fun sertifikatOK(sertifikatData: SertifikatData, ssn: String?) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
 
-internal fun sertifikatOK(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
+internal fun sertifikatOK(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
 
-internal fun sertifikatUkjentFeil(certificate: X509Certificate) =
-    createSertifikatInfoFromCertificate(certificate, SertifikatStatus.UKJENT, UKJENT_FEIL, null)
+internal fun sertifikatUkjentFeil(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.UKJENT, UKJENT_FEIL, null)
 
-internal fun createSertifikatInfoFromCertificate(certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String) =
-    createSertifikatInfoFromCertificate(certificate, status, beskrivelse, null)
+internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String) =
+    createSertifikatInfoFromCertificate(sertifikatData, status, beskrivelse, null)
 
-internal fun createSertifikatInfoFromCertificate(certificate: X509Certificate, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
-        if (getSertifikatType(certificate) == SertifikatType.VIRKSOMHET) {
-            log.info("Sertifikat: ${certificate.serialNumber}, sertifikatstatus: $status")
-            createVirksomhetssertifikatInfo(certificate, status, beskrivelse)
+internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
+        if (getSertifikatType(sertifikatData.sertifikat) == SertifikatType.VIRKSOMHET) {
+            log.info("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikatData.sertifikat.serialNumber}, sertifikatstatus: $status")
+            createVirksomhetssertifikatInfo(sertifikatData, status, beskrivelse)
         } else {
-            log.info("Sertifikat: ${certificate.serialNumber}, sertifikatstatus: $status")
-            createPersonSertifikatInfo(certificate, status, beskrivelse, ssn)
+            log.info("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikatData.sertifikat.serialNumber}, sertifikatstatus: $status")
+            createPersonSertifikatInfo(sertifikatData, status, beskrivelse, ssn)
         }
 
 private fun createPersonSertifikatInfo(
-    certificate: X509Certificate,
+    sertifikatData: SertifikatData,
     status: SertifikatStatus,
     beskrivelse: String,
     ssn: String?
 ) = SertifikatInfo(
-    serienummer = certificate.serialNumber.toString(),
+    serienummer = sertifikatData.sertifikat.serialNumber.toString(),
     status = status,
     type = SertifikatType.PERSONLIG,
-    seid = getSEIDVersion(certificate),
-    gyldigFra = formatDate(certificate.notBefore),
-    gyldigTil = formatDate(certificate.notAfter),
-    utsteder = certificate.issuerX500Principal.name,
+    seid = getSEIDVersion(sertifikatData.sertifikat),
+    gyldigFra = formatDate(sertifikatData.sertifikat.notBefore),
+    gyldigTil = formatDate(sertifikatData.sertifikat.notAfter),
+    utsteder = sertifikatData.sertifikat.issuerX500Principal.name,
     orgnummer = null,
     fnr = ssn,
     beskrivelse = beskrivelse,
@@ -100,18 +101,18 @@ private fun createPersonSertifikatInfo(
 )
 
 private fun createVirksomhetssertifikatInfo(
-    certificate: X509Certificate,
+    sertifikatData: SertifikatData,
     status: SertifikatStatus,
     beskrivelse: String
 ) = SertifikatInfo(
-    serienummer = certificate.serialNumber.toString(),
+    serienummer = sertifikatData.sertifikat.serialNumber.toString(),
     status = status,
     type = SertifikatType.VIRKSOMHET,
-    seid = getSEIDVersion(certificate),
-    gyldigFra = formatDate(certificate.notBefore),
-    gyldigTil = formatDate(certificate.notAfter),
-    utsteder = certificate.issuerX500Principal.name,
-    orgnummer = getOrganizationNumber(certificate),
+    seid = getSEIDVersion(sertifikatData.sertifikat),
+    gyldigFra = formatDate(sertifikatData.sertifikat.notBefore),
+    gyldigTil = formatDate(sertifikatData.sertifikat.notAfter),
+    utsteder = sertifikatData.sertifikat.issuerX500Principal.name,
+    orgnummer = getOrganizationNumber(sertifikatData.sertifikat),
     fnr = null,
     beskrivelse = beskrivelse,
     feilmelding = null

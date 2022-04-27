@@ -5,6 +5,7 @@ import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_EMPTY_RESPONSE
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
+import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler
@@ -51,7 +52,8 @@ class OCSPChecker(val webClient: RestTemplate) {
     private val SSN_POLICY_ID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
     private val bcProvider = BouncyCastleProvider()
 
-    fun getOCSPStatus(certificate: X509Certificate): SertifikatInfo {
+    fun getOCSPStatus(sertifikatData: SertifikatData): SertifikatInfo {
+        val certificate = sertifikatData.sertifikat
         return try {
             val certificateIssuer = certificate.issuerX500Principal.name
             val ocspResponderCertificate = getOcspResponderCertificate(certificateIssuer)
@@ -60,9 +62,9 @@ class OCSPChecker(val webClient: RestTemplate) {
             val response = postOCSPRequest(getOCSPUrl(certificate), request.encoded)
             decodeResponse(response, certificate, request.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce), ocspResponderCertificate)
         } catch (e: SertifikatError) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, e.localizedMessage, certificate, e, e.logStackTrace)
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, e.localizedMessage, sertifikatData, e, e.logStackTrace)
         } catch (e: Exception) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, e.localizedMessage, certificate, e)
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, e.localizedMessage, sertifikatData, e)
         }
     }
 

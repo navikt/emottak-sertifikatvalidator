@@ -8,6 +8,7 @@ import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
 import no.nav.emottak.sertifikatvalidator.UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
+import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
@@ -27,7 +28,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.security.cert.CertificateExpiredException
 import java.security.cert.CertificateNotYetValidException
-import java.security.cert.X509Certificate
 import java.time.Instant
 import java.util.Date
 
@@ -35,41 +35,39 @@ import java.util.Date
 class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLChecker, val ssnCache: SsnCache) {
 
 
-    internal fun validateCertificate(certificate: X509Certificate, dateInstant: Instant, uuid: String): SertifikatInfo {
-        log.info("$uuid sertifikatvalidering startet")
-        log.debug(certificate.toString())
+    internal fun validateCertificate(sertifikatData: SertifikatData, dateInstant: Instant): SertifikatInfo {
+        log.info("UUID ${sertifikatData.uuid}, Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
+        log.debug(sertifikatData.sertifikat.toString())
         try {
-            sjekkOmSertifikatErSelvsignert(certificate)
+            sjekkOmSertifikatErSelvsignert(sertifikatData)
 
-            val certificateValidNow = certificateValidAtTime(certificate, Instant.now())
-            val certificateValidAtGivenTime = certificateValidAtTime(certificate, dateInstant)
+            val certificateValidNow = certificateValidAtTime(sertifikatData, Instant.now())
+            val certificateValidAtGivenTime = certificateValidAtTime(sertifikatData, dateInstant)
             return if (!certificateValidNow && !certificateValidAtGivenTime) {
-                log.warn("$uuid sertifikatvalidering feilet")
-                throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(certificate), false)
+                throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(sertifikatData), false)
             } else if (!certificateValidNow) {
-                log.info("$uuid sertifikatvalidering sjekker legacy sertifikat")
-                checkLegacyCertificate(certificate)
+                checkLegacyCertificate(sertifikatData)
             } else {
-                log.info("$uuid sertifikatvalidering sjekker aktivt sertifikat")
-                checkCurrentCertificate(certificate)
+                checkCurrentCertificate(sertifikatData)
             }
 
         } catch (e: CertificateExpiredException) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_LENGER, sertifikatUtloept(certificate), e)
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_LENGER, sertifikatUtloept(sertifikatData), e)
         } catch (e: CertificateNotYetValidException) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_ENDA, sertifikatIkkeGyldigEnda(certificate), e)
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_ENDA, sertifikatIkkeGyldigEnda(sertifikatData), e)
         }
     }
 
-    private fun checkCurrentCertificate(certificate: X509Certificate): SertifikatInfo {
-        return sjekkSertifikat(certificate = certificate, sjekkCRL = true, sjekkOCSP = true)
+    private fun checkCurrentCertificate(sertifikatData: SertifikatData): SertifikatInfo {
+        return sjekkSertifikat(sertifikatData = sertifikatData, sjekkCRL = true, sjekkOCSP = true)
     }
 
-    private fun checkLegacyCertificate(certificate: X509Certificate): SertifikatInfo {
-        return sjekkSertifikat(certificate = certificate, sjekkCRL = false, sjekkOCSP = true)
+    private fun checkLegacyCertificate(sertifikatData: SertifikatData): SertifikatInfo {
+        return sjekkSertifikat(sertifikatData = sertifikatData, sjekkCRL = false, sjekkOCSP = true)
     }
 
-    private fun certificateValidAtTime(certificate: X509Certificate, instant: Instant): Boolean {
+    private fun certificateValidAtTime(sertifikatData: SertifikatData, instant: Instant): Boolean {
+        val certificate = sertifikatData.sertifikat
         return try {
             certificate.checkValidity(Date(instant.toEpochMilli()))
             true
@@ -80,68 +78,69 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         }
     }
 
-    private fun sjekkSertifikat(certificate: X509Certificate, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
+    private fun sjekkSertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         if (!sjekkCRL && !sjekkOCSP) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(certificate))
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(sertifikatData))
         }
-        return if (isVirksomhetssertifikat(certificate)) {
-            sjekkVirksomhetssertifikat(certificate, sjekkCRL, sjekkOCSP)
+        return if (isVirksomhetssertifikat(sertifikatData.sertifikat)) {
+            sjekkVirksomhetssertifikat(sertifikatData, sjekkCRL, sjekkOCSP)
         } else {
-            sjekkPersonligSertifikat(certificate, sjekkCRL, sjekkOCSP)
+            sjekkPersonligSertifikat(sertifikatData, sjekkCRL, sjekkOCSP)
         }
     }
 
-    private fun sjekkOmSertifikatErSelvsignert(certificate: X509Certificate) {
-        if (isSelfSigned(certificate)) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(certificate), false)
+    private fun sjekkOmSertifikatErSelvsignert(sertifikatData: SertifikatData) {
+        if (isSelfSigned(sertifikatData.sertifikat)) {
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(sertifikatData), false)
         }
     }
 
-    private fun sjekkPersonligSertifikat(certificate: X509Certificate, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
-        log.info("Sertifikat: ${certificate.serialNumber}: Personlig sertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
-        val ssn = ssnCache.getSSN(certificate)
+    private fun sjekkPersonligSertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
+        log.debug("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikatData.sertifikat.serialNumber}: Personlig sertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
+        val ssn = ssnCache.getSSN(sertifikatData.sertifikat)
         if (ssn == null || !sjekkCRL) {
             log.info("SSN finnes ikke i cache, sjekker OCSP")
             return try {
-                sjekkOCSP(certificate)
+                sjekkOCSP(sertifikatData)
             }
             catch (e: Exception) {
                 if(sjekkCRL) {
                     log.info("OCSP sjekk feilet, sjekker CRL")
-                    sjekkCRL(certificate, null)
+                    sjekkCRL(sertifikatData, null)
                 }
                 else {
                     log.info("OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
-                    throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(certificate))
+                    throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(sertifikatData))
                 }
             }
         } else {
             log.info("SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
             return if (sjekkCRL) {
-                sjekkCRL(certificate, ssn)
+                sjekkCRL(sertifikatData, ssn)
             }
             else {
-                sjekkOCSP(certificate)
+                sjekkOCSP(sertifikatData)
             }
         }
     }
 
-    private fun sjekkCRL(certificate: X509Certificate, ssn: String?): SertifikatInfo {
+    private fun sjekkCRL(sertifikatData: SertifikatData, ssn: String?): SertifikatInfo {
+        val sertifikat = sertifikatData.sertifikat
         try {
             val crlRevocationInfo =
-                crlChecker.getCRLRevocationInfo(certificate.issuerX500Principal.name, certificate.serialNumber)
+                crlChecker.getCRLRevocationInfo(sertifikat.issuerX500Principal.name, sertifikat.serialNumber)
             if (crlRevocationInfo.revoked) {
-                log.info("Sertifikat: ${certificate.serialNumber}: Sertifikat revokert (CRL)")
-                return sertifikatRevokert(certificate, crlRevocationInfo.revocationReason)
+                log.info("Sertifikat: ${sertifikat.serialNumber}: Sertifikat revokert (CRL)")
+                return sertifikatRevokert(sertifikatData, crlRevocationInfo.revocationReason)
             }
-            return sertifikatOK(certificate, ssn)
+            return sertifikatOK(sertifikatData, ssn)
         } catch (e: Exception) {
-            val crlDistributionPoint = certificate.getExtensionValue(Extension.cRLDistributionPoints.toString())
+            val crlDistributionPoint = sertifikat.getExtensionValue(Extension.cRLDistributionPoints.toString())
             val crlDistributionPoints = CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))
             log.info("-------------------------------------------------")
             log.info("CRL sjekk feilet, muligens manglende CRL cache for issuer")
             log.info("Dersom dette ikke skulle feilet, vurder å oppdatere application properties med disse verdiene")
-            log.info("DN: ${certificate.issuerX500Principal.name}")
+            log.info("DN: ${sertifikat.issuerX500Principal.name}")
             crlDistributionPoints.distributionPoints.forEach {
                 log.info("CRL: ${it.distributionPoint.name}")
             }
@@ -150,29 +149,31 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         }
     }
 
-    private fun sjekkOCSP(certificate: X509Certificate): SertifikatInfo {
-        val ocspResponse = ocspChecker.getOCSPStatus(certificate)
+    private fun sjekkOCSP(sertifikatData: SertifikatData): SertifikatInfo {
+        val sertifikat = sertifikatData.sertifikat
+        val ocspResponse = ocspChecker.getOCSPStatus(sertifikatData)
         val fnr = ocspResponse.fnr
         if (!fnr.isNullOrBlank()) {
-            ssnCache.updateSSNCacheValue(certificate, fnr)
+            ssnCache.updateSSNCacheValue(sertifikat, fnr)
         }
         if (ocspResponse.status == SertifikatStatus.REVOKERT) {
-            log.info("Sertifikat: ${certificate.serialNumber}: Sertifikat revokert (OCSP)")
+            log.info("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikat.serialNumber}: Sertifikat revokert (OCSP)")
             return ocspResponse
         }
-        return sertifikatOK(certificate, fnr)
+        return sertifikatOK(sertifikatData, fnr)
     }
 
-    private fun sjekkVirksomhetssertifikat(certificate: X509Certificate, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
-        log.info("Sertifikat: ${certificate.serialNumber}: Virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
+    private fun sjekkVirksomhetssertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
+        val sertifikat = sertifikatData.sertifikat
+        log.debug("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikat.serialNumber}: Virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
         return try {
             if(sjekkCRL)
-                sjekkCRL(certificate, null)
+                sjekkCRL(sertifikatData, null)
             else
-                sjekkOCSP(certificate)
+                sjekkOCSP(sertifikatData)
         } catch (e: Exception) {
-            log.warn("Sertifikat: ${certificate.serialNumber}: Sjekk av CRL feilet, sjekker OCSP", e)
-            if (sjekkOCSP) sjekkOCSP(certificate) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(certificate))
+            log.warn("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikat.serialNumber}: Sjekk av CRL feilet, sjekker OCSP", e)
+            if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(sertifikatData))
         }
     }
 }

@@ -2,20 +2,19 @@ package no.nav.emottak.sertifikatvalidator.model
 
 import org.springframework.http.HttpStatus
 import java.lang.Exception
-import java.security.cert.X509Certificate
 
 class SertifikatError : RuntimeException {
 
     val statusCode: HttpStatus
     val sertifikatInfo: SertifikatInfo?
-    val certificate: X509Certificate?
+    val sertifikatData: SertifikatData?
     val logStackTrace: Boolean
 
     constructor(statusCode: HttpStatus,
                 message: String): super(message) {
         this.statusCode = statusCode
         this.sertifikatInfo = null
-        this.certificate = null
+        this.sertifikatData = null
         this.logStackTrace = true
     }
 
@@ -24,7 +23,7 @@ class SertifikatError : RuntimeException {
                 logStackTrace: Boolean): super(message) {
         this.statusCode = statusCode
         this.sertifikatInfo = null
-        this.certificate = null
+        this.sertifikatData = null
         this.logStackTrace = logStackTrace
     }
 
@@ -34,7 +33,7 @@ class SertifikatError : RuntimeException {
     ): super(message) {
         this.statusCode = statusCode
         this.sertifikatInfo = sertifikatInfo
-        this.certificate = null
+        this.sertifikatData = null
         this.logStackTrace = true
     }
 
@@ -45,7 +44,7 @@ class SertifikatError : RuntimeException {
     ): super(message) {
         this.statusCode = statusCode
         this.sertifikatInfo = sertifikatInfo
-        this.certificate = null
+        this.sertifikatData = null
         this.logStackTrace = logStackTrace
     }
 
@@ -54,7 +53,7 @@ class SertifikatError : RuntimeException {
                 exception: Exception): super(message, exception) {
         this.statusCode = statusCode
         this.sertifikatInfo = null
-        this.certificate = null
+        this.sertifikatData = null
         this.logStackTrace = true
     }
 
@@ -64,28 +63,28 @@ class SertifikatError : RuntimeException {
                 exception: Exception): super(message, exception) {
         this.statusCode = statusCode
         this.sertifikatInfo = sertifikatInfo
-        this.certificate = null
+        this.sertifikatData = null
         this.logStackTrace = true
     }
 
     constructor(statusCode: HttpStatus,
                 message: String,
-                certificate: X509Certificate,
+                sertifikatData: SertifikatData,
                 exception: Exception): super(message, exception) {
         this.statusCode = statusCode
         this.sertifikatInfo = null
-        this.certificate = certificate
+        this.sertifikatData = sertifikatData
         this.logStackTrace = true
     }
 
     constructor(statusCode: HttpStatus,
                 message: String,
-                certificate: X509Certificate,
+                sertifikatData: SertifikatData,
                 exception: Exception,
                 logStackTrace: Boolean): super(message, exception) {
         this.statusCode = statusCode
         this.sertifikatInfo = null
-        this.certificate = certificate
+        this.sertifikatData = sertifikatData
         this.logStackTrace = logStackTrace
     }
 }

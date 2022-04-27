@@ -1,5 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.controller
 
+import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.service.SertifikatValidator
 import no.nav.emottak.sertifikatvalidator.util.createResponseEntity
@@ -29,7 +30,8 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         val uuid = certificate.originalFilename ?: "FILENAME_MISSING_GENERATED_THIS_${UUID.randomUUID()}"
         val x509Certificate = createX509Certificate(certificate.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, validityDate, uuid)
+        val sertifikatData = SertifikatData(x509Certificate, uuid)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(sertifikatData, validityDate)
         return createResponseEntity(sertifikatInfo)
     }
 
