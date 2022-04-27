@@ -70,6 +70,7 @@ class CRLChecker(val webClient: RestTemplate) {
             }
             crlFiles[x500Name] = crl
             log.info("...oppdatert CRL fra ${crl.url}" )
+            log.info("...oppdatert CRL er fra ${crl.crl?.thisUpdate}" )
         }
         log.info("Periodisk oppdatering ferdig, $updateCounter/${crls.crlList.size} CRLer oppdatert")
         log.info("----------------------------------------")
@@ -107,7 +108,7 @@ class CRLChecker(val webClient: RestTemplate) {
         try {
             val crl = createCRL(getCrlFileFromUrl(crlHolder.url))
             crlHolder.crl = crl
-            crlHolder.updatedDate = LocalDateTime.now()
+            crlHolder.cachedDate = LocalDateTime.now()
             return crl
         } catch (e: Exception) {
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "${crlHolder.url}: Kunne ikke oppdatere CRL", e)
