@@ -1,5 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.klient
 
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.oauth2.sdk.AuthorizationGrant
@@ -78,6 +79,8 @@ abstract class MicroserviceClient {
             if (response.isSuccessful) {
                 log.info("Sertifikat OK")
                 log.debug("Sertifikatvalidering gjennomført, sertifikat OK")
+            } else if (response.code == 400) {
+                log.warn("Sertifikatvalidering svarte med BadRequest(400), sjekk input")
             } else if (response.code == 401) {
                 log.warn("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
                 throw RuntimeException("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
@@ -86,6 +89,10 @@ abstract class MicroserviceClient {
                 log.debug("Feilkode ${response.code} fra $url")
             }
             return objectMapper.readValue(response.body?.string(), responseClass)
+        } catch (e: MismatchedInputException) {
+            log.warn("Respons fra sertifikatvalidering er ikke gyldig: ${e.localizedMessage}")
+            log.debug("Respons fra sertifikatvalidering ($url) er ikke gyldig", e)
+            throw e
         } catch (e: Exception) {
             log.debug("Feil ved kall til $url", e)
             throw e
