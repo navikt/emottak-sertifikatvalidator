@@ -129,25 +129,27 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun sjekkCRL(certificate: X509Certificate, ssn: String?): SertifikatInfo {
-        val crlDistributionPoint = certificate.getExtensionValue(Extension.cRLDistributionPoints.toString())
-        val crlDistributionPoints = CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))
-        log.info("-------------------------------------------------")
-        log.info("Skal sjekke CRL, følgende verdier finnes i sertifikat")
-        log.info("Dersom dette feiler, men ikke skulle gjort det, vurder å oppdatere application properties med disse verdiene")
-        log.info("DN: ${certificate.issuerX500Principal.name}")
-        log.debug("CRL: $crlDistributionPoints")
-        crlDistributionPoints.distributionPoints.forEach {
-            log.info("CRL: ${it.distributionPoint.name}")
+        try {
+            val crlRevocationInfo =
+                crlChecker.getCRLRevocationInfo(certificate.issuerX500Principal.name, certificate.serialNumber)
+            if (crlRevocationInfo.revoked) {
+                log.info("Sertifikat: ${certificate.serialNumber}: Sertifikat revokert (CRL)")
+                return sertifikatRevokert(certificate, crlRevocationInfo.revocationReason)
+            }
+            return sertifikatOK(certificate, ssn)
+        } catch (e: Exception) {
+            val crlDistributionPoint = certificate.getExtensionValue(Extension.cRLDistributionPoints.toString())
+            val crlDistributionPoints = CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))
+            log.info("-------------------------------------------------")
+            log.info("CRL sjekk feilet, muligens manglende CRL cache for issuer")
+            log.info("Dersom dette ikke skulle feilet, vurder å oppdatere application properties med disse verdiene")
+            log.info("DN: ${certificate.issuerX500Principal.name}")
+            crlDistributionPoints.distributionPoints.forEach {
+                log.info("CRL: ${it.distributionPoint.name}")
+            }
+            log.info("-------------------------------------------------")
+            throw e
         }
-        log.info("-------------------------------------------------")
-
-        val crlRevocationInfo =
-            crlChecker.getCRLRevocationInfo(certificate.issuerX500Principal.name, certificate.serialNumber)
-        if (crlRevocationInfo.revoked) {
-            log.info("Sertifikat: ${certificate.serialNumber}: Sertifikat revokert (CRL)")
-            return sertifikatRevokert(certificate, crlRevocationInfo.revocationReason)
-        }
-        return sertifikatOK(certificate, ssn)
     }
 
     private fun sjekkOCSP(certificate: X509Certificate): SertifikatInfo {
