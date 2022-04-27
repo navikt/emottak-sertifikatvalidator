@@ -55,7 +55,7 @@ class SertifikatValidatorTest {
         val certificateInputstream = createInputstreamFromFileName(filnavn)
         val x509Certificate = createX509Certificate(certificateInputstream)
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -71,7 +71,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -87,7 +87,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -103,7 +103,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.REVOKERT, SertifikatType.PERSONLIG, "12345678910", SERTIFIKAT_REVOKERT))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.REVOKERT)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_REVOKERT)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -118,7 +118,7 @@ class SertifikatValidatorTest {
         val x509Certificate = createX509Certificate(certificateInputstream)
 
         val exception = assertThrows<SertifikatError> {
-            sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+            sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         }
         assert(exception.statusCode == HttpStatus.UNPROCESSABLE_ENTITY)
         assert(exception.message == SERTIFIKAT_IKKE_GYLDIG)
@@ -135,7 +135,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -151,7 +151,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -167,7 +167,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -183,7 +183,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
@@ -199,7 +199,7 @@ class SertifikatValidatorTest {
 
         Mockito.`when`(ocspChecker.getOCSPStatus(x509Certificate)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, SertifikatType.PERSONLIG, "12345678910", ""))
 
-        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(x509Certificate, gyldighetsdato, filnavn)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
         assert(sertifikatInfo.beskrivelse == SERTIFIKAT_VALIDERING_OK)
         log.info("SertifikatInfo: $sertifikatInfo")
