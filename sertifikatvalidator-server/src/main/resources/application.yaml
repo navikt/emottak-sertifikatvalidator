@@ -49,3 +49,5 @@ ekstern:
       url: "http://crl1.test.commfides.com/CommfidesEnterprise-SHA256.crl"
     - dn: "CN=Buypass Class 2 CA 2,O=Buypass AS-983163327,C=NO"
       url: "http://crl.buypass.no/crl/BPClass2CA2.crl"
+    - dn: "CN=Buypass Class 3 CA 3,O=Buypass AS-983163327,C=NO"
+      url: "http://crl.buypass.no/crl/BPClass3CA3.crl"

@@ -235,7 +235,7 @@ class OCSPChecker(val webClient: RestTemplate) {
             log.debug("Request signed: ${request.isSigned}")
             return request
         } catch (e: Exception) {
-            log.error("${certificate.serialNumber} $FAILED_TO_GENERATE_REVOCATION_REQUEST", e)
+            log.error("${certificate.serialNumber} $FAILED_TO_GENERATE_REVOCATION_REQUEST")
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, FAILED_TO_GENERATE_REVOCATION_REQUEST, e)
         }
     }
