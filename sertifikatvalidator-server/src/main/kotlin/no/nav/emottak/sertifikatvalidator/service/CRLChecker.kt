@@ -12,7 +12,6 @@ import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.Scheduled
@@ -56,25 +55,24 @@ class CRLChecker(val webClient: RestTemplate) {
 
     @Scheduled(cron = "\${schedule.cron.cache.crl}")
     private fun updateCRLsPeriodically() {
-        log.info("----------------------------")
-        log.info("Periodisk oppdatering av CRL (${crls.crlList.size} CRLer konfigurert)")
-        log.info("Periodisk oppdatering oppdaterer ALLE CRLer")
+        log.info("----------------------------------------")
+        log.info("Periodisk oppdatering av alle CRLer (${crls.crlList.size} CRLer konfigurert)")
         var updateCounter = 0
         crls.crlList.forEach { crl ->
             val x500Name = X500Name(crl.dn)
             log.info(crl.name)
-            log.info(" - Henter oppdatert CRL fra ${crl.url}")
+            log.info("...henter oppdatert CRL fra ${crl.url}")
             try {
-                createCrl(crl)
+                updateCRL(crl)
                 updateCounter++
             } catch (e: Exception) {
-                log.warn(" - Oppdatering av CRL feilet fra ${crl.url}", e)
+                log.warn("...oppdatering av CRL feilet fra ${crl.url}", e)
             }
             crlFiles[x500Name] = crl
-            log.info(" - Oppdatert CRL fra ${crl.url}")
+            log.info("...oppdatert CRL fra ${crl.url}" )
         }
-        log.info("Periodisk oppdatering $updateCounter CRLer oppdatert")
-        log.info("----------------------------")
+        log.info("Periodisk oppdatering ferdig, $updateCounter/${crls.crlList.size} CRLer oppdatert")
+        log.info("----------------------------------------")
     }
 
     private fun getRevokedCertificate(issuer: String, serialNumber: BigInteger): X509CRLEntry? {
@@ -85,10 +83,10 @@ class CRLChecker(val webClient: RestTemplate) {
         val issuerX500Name = X500Name(issuer)
         val crlHolder = crlFiles[issuerX500Name] ?: throw SertifikatError(HttpStatus.BAD_REQUEST, "Ukjent sertifikatutsteder $issuer, kunne ikke sjekke CRL")
         return if (isCRLNullOrExpired(crlHolder)) {
-            createCrl(crlHolder)
+            updateCRL(crlHolder)
         }
         else {
-            crlHolder.crl ?: createCrl(crlHolder)
+            crlHolder.crl ?: updateCRL(crlHolder)
         }
     }
 
@@ -105,7 +103,7 @@ class CRLChecker(val webClient: RestTemplate) {
         return false
     }
 
-    private fun createCrl(crlHolder: CRLHolder): X509CRL {
+    private fun updateCRL(crlHolder: CRLHolder): X509CRL {
         try {
             val crl = createCRL(getCrlFileFromUrl(crlHolder.url))
             crlHolder.crl = crl
