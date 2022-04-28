@@ -55,25 +55,30 @@ class CRLChecker(val webClient: RestTemplate) {
 
     @Scheduled(cron = "\${schedule.cron.cache.crl}")
     private fun updateCRLsPeriodically() {
-        log.info("----------------------------------------")
-        log.info("Periodisk oppdatering av alle CRLer (${crls.crlList.size} CRLer konfigurert)")
+        val crlUpdateStatus = StringBuilder()
+        crlUpdateStatus
+            .append("\n")
+            .append("----------------------------------------\n")
+            .append("Periodisk oppdatering av alle CRLer (${crls.crlList.size} CRLer konfigurert)\n")
         var updateCounter = 0
         crls.crlList.forEach { crl ->
             val x500Name = X500Name(crl.dn)
-            log.info(crl.name)
-            log.info("...henter oppdatert CRL fra ${crl.url}")
+            crlUpdateStatus.append("${crl.name}\n")
+            crlUpdateStatus.append("...henter oppdatert CRL fra ${crl.url}\n")
             try {
                 updateCRL(crl)
                 updateCounter++
             } catch (e: Exception) {
+                crlUpdateStatus.append("...oppdatering av CRL feilet fra ${crl.url}\n")
                 log.warn("...oppdatering av CRL feilet fra ${crl.url}", e)
             }
             crlFiles[x500Name] = crl
-            log.info("...oppdatert CRL fra ${crl.url}" )
-            log.info("...oppdatert CRL er fra ${crl.crl?.thisUpdate}" )
+            crlUpdateStatus.append("...oppdatert CRL fra ${crl.url}\n" )
+            crlUpdateStatus.append("...oppdatert CRL er fra ${crl.crl?.thisUpdate}\n" )
         }
-        log.info("Periodisk oppdatering ferdig, $updateCounter/${crls.crlList.size} CRLer oppdatert")
-        log.info("----------------------------------------")
+        crlUpdateStatus.append("Periodisk oppdatering ferdig, $updateCounter/${crls.crlList.size} CRLer oppdatert\n")
+        crlUpdateStatus.append("----------------------------------------\n")
+        log.info(crlUpdateStatus.toString())
     }
 
     private fun getRevokedCertificate(issuer: String, serialNumber: BigInteger): X509CRLEntry? {
