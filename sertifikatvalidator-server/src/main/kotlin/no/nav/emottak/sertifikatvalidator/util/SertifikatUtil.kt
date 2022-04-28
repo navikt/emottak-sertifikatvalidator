@@ -32,7 +32,7 @@ import javax.security.auth.x500.X500Principal
 private const val POLICY_ID = "2.5.29.32"
 private const val POLICY_ID_AGENCY = "[2.16.578.1.26.1.0.3.2]" //2.16.578.1.26.1.3.2
 
-private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.5.4.5", "o")
+private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.4.5.97", "OID.2.5.4.5", "o")
 private val EXTRACT_ORGNO_PATTERN = Pattern.compile("^(\\d{9})$|^.*-\\s*(\\d{9})$")
 
 internal fun getOrganizationNumber(x509Certificate: X509Certificate): String? {

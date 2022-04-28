@@ -143,7 +143,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         val seidVersion = getSEIDVersion(sertifikat)
         val orgnummer = getOrganizationNumber(sertifikat)
         log.info("UUID ${sertifikatData.uuid} er et virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
-        log.info("UUID ${sertifikatData.uuid} er et ${getSEIDVersion(sertifikat)} sertifikat med orgnummer ${getOrganizationNumber(sertifikat)}")
+        log.info("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat med orgnummer $orgnummer")
         if (seidVersion == SEIDVersion.SEID20 && orgnummer.isNullOrEmpty()) {
             log.warn("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat og orgnummeruthenting feilet!")
         }
