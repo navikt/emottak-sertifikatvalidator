@@ -85,7 +85,6 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         if (!sjekkCRL && !sjekkOCSP) {
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(sertifikatData))
         }
-        log.info("UUID ${sertifikatData.uuid} SEID: ${getSEIDVersion(sertifikatData.sertifikat)}")
         return if (isVirksomhetssertifikat(sertifikatData.sertifikat)) {
             sjekkVirksomhetssertifikat(sertifikatData, sjekkCRL, sjekkOCSP)
         } else {
