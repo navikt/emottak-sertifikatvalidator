@@ -29,7 +29,6 @@ open class SertifikatValidator(): MicroserviceClient() {
             true -> "http://localhost:8080/api/valider/sertifikat"
             false -> serviceUrl
         }
-        log.info("UUID $messageId validerer sertifikat")
         try {
             val requestBody = createMultipartBodyRequest(sertifikat, messageId)
             val request = Request.Builder()
