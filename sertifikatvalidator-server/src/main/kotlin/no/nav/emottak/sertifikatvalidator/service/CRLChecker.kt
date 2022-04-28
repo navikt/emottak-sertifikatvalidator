@@ -55,11 +55,12 @@ class CRLChecker(val webClient: RestTemplate) {
 
     @Scheduled(cron = "\${schedule.cron.cache.crl}")
     private fun updateCRLsPeriodically() {
+        log.info("Periodisk oppdatering av alle CRLer startet...")
         val crlUpdateStatus = StringBuilder()
         crlUpdateStatus
             .append("\n")
             .append("----------------------------------------\n")
-            .append("Periodisk oppdatering av alle CRLer (${crls.crlList.size} CRLer konfigurert)\n")
+            .append("Periodisk oppdatering av alle CRLer: ${crls.crlList.size} CRLer konfigurert\n")
         var updateCounter = 0
         crls.crlList.forEach { crl ->
             val x500Name = X500Name(crl.dn)
@@ -69,15 +70,15 @@ class CRLChecker(val webClient: RestTemplate) {
                 updateCRL(crl)
                 updateCounter++
             } catch (e: Exception) {
-                crlUpdateStatus.append("...oppdatering av CRL feilet fra ${crl.url}\n")
-                log.warn("...oppdatering av CRL feilet fra ${crl.url}", e)
+                crlUpdateStatus.append("...OBS! oppdatering av CRL feilet fra ${crl.url}\n")
+                log.warn("Oppdatering av CRL feilet fra ${crl.url}", e)
             }
             crlFiles[x500Name] = crl
             crlUpdateStatus.append("...oppdatert CRL fra ${crl.url}\n" )
             crlUpdateStatus.append("...oppdatert CRL er fra ${crl.crl?.thisUpdate}\n" )
         }
-        crlUpdateStatus.append("Periodisk oppdatering ferdig, $updateCounter/${crls.crlList.size} CRLer oppdatert\n")
-        crlUpdateStatus.append("----------------------------------------\n")
+        crlUpdateStatus.append("Periodisk oppdatering ferdig: $updateCounter/${crls.crlList.size} CRLer oppdatert\n")
+        crlUpdateStatus.append("----------------------------------------")
         log.info(crlUpdateStatus.toString())
     }
 
