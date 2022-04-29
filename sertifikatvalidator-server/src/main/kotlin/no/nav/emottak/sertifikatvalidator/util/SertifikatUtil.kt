@@ -193,7 +193,8 @@ private fun getKeyUsages(certificate: X509Certificate): List<KeyUsage> {
 
 private fun getCertificatePolicies(certificate: X509Certificate): List<String> {
     val bytes = certificate.getExtensionValue(Extension.certificatePolicies.id)
-    val policies = DLSequence.fromByteArray(bytes) as DLSequence
+    val octetString = ASN1Primitive.fromByteArray(bytes) as ASN1OctetString
+    val policies = ASN1Primitive.fromByteArray(octetString.octets) as DLSequence
     return policies.map { policy ->
         (policy as DLSequence).toString()
     }.toList()
