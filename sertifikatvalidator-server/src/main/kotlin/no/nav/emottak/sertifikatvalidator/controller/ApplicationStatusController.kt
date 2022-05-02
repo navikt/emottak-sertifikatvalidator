@@ -3,6 +3,7 @@ package no.nav.emottak.sertifikatvalidator.controller
 import no.nav.emottak.sertifikatvalidator.model.CRLStatus
 import no.nav.emottak.sertifikatvalidator.model.ServerStatus
 import no.nav.emottak.sertifikatvalidator.service.CRLChecker
+import no.nav.emottak.sertifikatvalidator.service.SsnCache
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -13,8 +14,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/status")
-class ApplicationStatusController(val crlChecker: CRLChecker) {
+@RequestMapping("/internal/status")
+class ApplicationStatusController(val crlChecker: CRLChecker, val ssnCache: SsnCache) {
 
     @GetMapping("/server/klient", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.OK)
@@ -40,6 +41,12 @@ class ApplicationStatusController(val crlChecker: CRLChecker) {
     fun updateCrlList(): ResponseEntity<List<CRLStatus>> {
         crlChecker.updateCRLs()
         return getCrlList()
+    }
+
+    @GetMapping("/fnr/cache/count", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ResponseStatus(HttpStatus.OK)
+    fun getFnrCounter(): ResponseEntity<Int> {
+        return ResponseEntity.ok(ssnCache.cacheCount())
     }
 
 }

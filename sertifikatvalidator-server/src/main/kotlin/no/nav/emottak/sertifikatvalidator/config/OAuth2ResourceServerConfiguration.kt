@@ -34,9 +34,10 @@ class OAuth2ResourceServerConfiguration(
                 "/internal/swagger-ui/*",
                 "/internal/api-docs/swagger-config",
                 "/internal/api-docs",
-                "/status/crl",
-                "/status/crl/update",
-                "/status/server/klient")
+                "/internal/status/crl",
+                "/internal/status/crl/update",
+                "/internal/status/fnr/cache/count",
+                "/internal/status/server/klient")
             .permitAll()
             .anyRequest()
             .fullyAuthenticated()
