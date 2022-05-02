@@ -69,13 +69,13 @@ class CRLChecker(val webClient: RestTemplate) {
             try {
                 updateCRL(crl)
                 updateCounter++
+                crlFiles[x500Name] = crl
+                crlUpdateStatus.append("...oppdatert CRL fra ${crl.url}\n" )
+                crlUpdateStatus.append("...oppdatert CRL er fra ${crl.crl?.thisUpdate}\n" )
             } catch (e: Exception) {
                 crlUpdateStatus.append("...OBS! oppdatering av CRL feilet fra ${crl.url}\n")
                 log.warn("Oppdatering av CRL feilet fra ${crl.url}", e)
             }
-            crlFiles[x500Name] = crl
-            crlUpdateStatus.append("...oppdatert CRL fra ${crl.url}\n" )
-            crlUpdateStatus.append("...oppdatert CRL er fra ${crl.crl?.thisUpdate}\n" )
         }
         crlUpdateStatus.append("Periodisk oppdatering ferdig: $updateCounter/${crls.crlList.size} CRLer oppdatert\n")
         crlUpdateStatus.append("----------------------------------------")
