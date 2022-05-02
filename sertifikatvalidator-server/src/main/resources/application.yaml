@@ -20,7 +20,7 @@ spring:
 schedule:
   cron:
     cache:
-      crl: '0 0 0 * * *'
+      crl: '0 0 */6 * * *'
       ssn: '0 0 1 * * *'
 
 management:
