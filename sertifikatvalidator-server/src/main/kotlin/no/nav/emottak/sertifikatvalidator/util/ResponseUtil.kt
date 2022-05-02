@@ -74,10 +74,10 @@ internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData,
 
 internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
         if (getSertifikatType(sertifikatData.sertifikat) == SertifikatType.VIRKSOMHET) {
-            log.info("UUID ${sertifikatData.uuid}: sertifikatvalidering $status")
+            log.info("UUID ${sertifikatData.uuid} sertifikatvalidering $status")
             createVirksomhetssertifikatInfo(sertifikatData, status, beskrivelse)
         } else {
-            log.info("UUID ${sertifikatData.uuid}: sertifikatvalidering $status")
+            log.info("UUID ${sertifikatData.uuid} sertifikatvalidering $status")
             createPersonSertifikatInfo(sertifikatData, status, beskrivelse, ssn)
         }
 

@@ -39,7 +39,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
 
     internal fun validateCertificate(sertifikatData: SertifikatData, dateInstant: Instant): SertifikatInfo {
-        log.info("UUID ${sertifikatData.uuid}, Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
+        log.info("UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
         log.debug(sertifikatData.sertifikat.toString())
         try {
             sjekkOmSertifikatErSelvsignert(sertifikatData)
@@ -131,7 +131,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             ssnCache.updateSSNCacheValue(sertifikat, fnr)
         }
         if (ocspResponse.status == SertifikatStatus.REVOKERT) {
-            log.info("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikat.serialNumber}: Sertifikat revokert (OCSP)")
+            log.info("UUID ${sertifikatData.uuid} Sertifikat revokert (OCSP)")
             return ocspResponse
         }
         return sertifikatOK(sertifikatData, fnr)
@@ -152,7 +152,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             else
                 sjekkOCSP(sertifikatData)
         } catch (e: Exception) {
-            log.warn("UUID ${sertifikatData.uuid}, Sertifikat: ${sertifikat.serialNumber}: Sjekk av CRL feilet, sjekker OCSP", e)
+            log.warn("UUID ${sertifikatData.uuid} Sjekk av CRL feilet, sjekker OCSP", e)
             if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(sertifikatData))
         }
     }
