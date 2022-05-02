@@ -37,7 +37,7 @@ private val policyIdVirksomhet = listOf(
     "[2.16.578.1.29.913.1.1.0]" //commfides.test.policy.id.agency
 )
 
-private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.4.5.97", "OID.2.5.4.5", "o")
+private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.5.4.97", "OID.2.5.4.5", "o")
 private val EXTRACT_ORGNO_PATTERN = Pattern.compile("^(\\d{9})$|^.*-\\s*(\\d{9})$")
 
 internal fun getOrganizationNumber(x509Certificate: X509Certificate): String? {
@@ -81,7 +81,7 @@ private fun getOrganizationNumberFromRDN(rdns: List<Rdn>, type: String): String?
 }
 
 internal fun getSEIDVersion(certificate: X509Certificate): SEIDVersion {
-    val seid2organizationIdentifierOID = "OID.2.4.5.97"
+    val seid2organizationIdentifierOID = "OID.2.5.4.97"
 
     val issuer = newLdapName(certificate.issuerX500Principal.getName(X500Principal.RFC1779))
 

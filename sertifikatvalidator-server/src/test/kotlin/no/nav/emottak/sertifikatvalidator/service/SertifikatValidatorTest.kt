@@ -1,4 +1,4 @@
-package no.nav.emottak.sertifikatvalidator.util
+package no.nav.emottak.sertifikatvalidator.service
 
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_REVOKERT
@@ -11,9 +11,12 @@ import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
 import no.nav.emottak.sertifikatvalidator.model.SertifikatType
-import no.nav.emottak.sertifikatvalidator.service.CRLChecker
-import no.nav.emottak.sertifikatvalidator.service.OCSPChecker
-import no.nav.emottak.sertifikatvalidator.service.SertifikatValidator
+import no.nav.emottak.sertifikatvalidator.util.createInputstreamFromFileName
+import no.nav.emottak.sertifikatvalidator.util.createX509Certificate
+import no.nav.emottak.sertifikatvalidator.util.formatDate
+import no.nav.emottak.sertifikatvalidator.util.getOrganizationNumber
+import no.nav.emottak.sertifikatvalidator.util.getSEIDVersion
+import no.nav.emottak.sertifikatvalidator.util.isVirksomhetssertifikat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -93,7 +96,10 @@ class SertifikatValidatorTest {
         val x509Certificate = createX509Certificate(certificateInputstream)
         val sertifikatData = SertifikatData(x509Certificate, filnavn)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(sertifikatData)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(sertifikatData))
+            .thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, "12345678910", ""))
+        Mockito.`when`(crlChecker.getCRLRevocationInfo(x509Certificate.issuerX500Principal.name, x509Certificate.serialNumber))
+            .thenReturn(createCRLRevocationInfo(x509Certificate, false, SERTIFIKAT_IKKE_REVOKERT))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(sertifikatData, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
@@ -181,7 +187,10 @@ class SertifikatValidatorTest {
         val x509Certificate = createX509Certificate(certificateInputstream)
         val sertifikatData = SertifikatData(x509Certificate, filnavn)
 
-        Mockito.`when`(ocspChecker.getOCSPStatus(sertifikatData)).thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, "12345678910", ""))
+        Mockito.`when`(ocspChecker.getOCSPStatus(sertifikatData))
+            .thenReturn(createOCSPCheckerResponse(x509Certificate, SertifikatStatus.OK, "12345678910", ""))
+        Mockito.`when`(crlChecker.getCRLRevocationInfo(x509Certificate.issuerX500Principal.name, x509Certificate.serialNumber))
+            .thenReturn(createCRLRevocationInfo(x509Certificate, false, SERTIFIKAT_IKKE_REVOKERT))
 
         val sertifikatInfo = sertifikatValidator.validateCertificate(sertifikatData, gyldighetsdato)
         assert(sertifikatInfo.status == SertifikatStatus.OK)
