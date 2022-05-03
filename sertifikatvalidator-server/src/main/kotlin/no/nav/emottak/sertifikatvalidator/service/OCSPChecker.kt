@@ -58,7 +58,7 @@ class OCSPChecker(val webClient: RestTemplate) {
             val certificateIssuer = certificate.issuerX500Principal.name
             val ocspResponderCertificate = getOcspResponderCertificate(certificateIssuer)
 
-            val request: OCSPReq = createOCSPRequest(certificate, ocspResponderCertificate)
+            val request: OCSPReq = createOCSPRequest(sertifikatData, ocspResponderCertificate)
             val response = postOCSPRequest(getOCSPUrl(certificate), request.encoded)
             decodeResponse(response, certificate, request.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce), ocspResponderCertificate)
         } catch (e: SertifikatError) {
@@ -203,9 +203,10 @@ class OCSPChecker(val webClient: RestTemplate) {
         return getOCSPResp(response.body ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_EMPTY_RESPONSE) )
     }
 
-    private fun createOCSPRequest(certificate: X509Certificate, ocspResponderCertificate: X509Certificate): OCSPReq {
+    private fun createOCSPRequest(sertifikatData: SertifikatData, ocspResponderCertificate: X509Certificate): OCSPReq {
         try {
-            log.debug("Sjekker sertifikat ${certificate.serialNumber}")
+            log.debug("UUID ${sertifikatData.uuid} Sjekker sertifikat")
+            val certificate = sertifikatData.sertifikat
             val ocspReqBuilder = OCSPReqBuilder()
             val providerName = ocspResponderCertificate.subjectX500Principal.name
             val provider = X500Name(providerName)
@@ -238,8 +239,8 @@ class OCSPChecker(val webClient: RestTemplate) {
             log.debug("Request signed: ${request.isSigned}")
             return request
         } catch (e: Exception) {
-            log.error("${certificate.serialNumber} $FAILED_TO_GENERATE_REVOCATION_REQUEST")
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, FAILED_TO_GENERATE_REVOCATION_REQUEST, e)
+            log.error("UUID ${sertifikatData.uuid} $FAILED_TO_GENERATE_REVOCATION_REQUEST")
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, FAILED_TO_GENERATE_REVOCATION_REQUEST, sertifikatData, e)
         }
     }
 

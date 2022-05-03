@@ -104,7 +104,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             val crlRevocationInfo =
                 crlChecker.getCRLRevocationInfo(sertifikat.issuerX500Principal.name, sertifikat.serialNumber)
             if (crlRevocationInfo.revoked) {
-                log.info("Sertifikat: ${sertifikat.serialNumber}: Sertifikat revokert (CRL)")
+                log.info("UUID ${sertifikatData.uuid} Sertifikat revokert (CRL)")
                 return sertifikatRevokert(sertifikatData, crlRevocationInfo.revocationReason)
             }
             return sertifikatOK(sertifikatData, ssn)
@@ -112,6 +112,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             val crlDistributionPoint = sertifikat.getExtensionValue(Extension.cRLDistributionPoints.toString())
             val crlDistributionPoints = CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))
             log.info("-------------------------------------------------")
+            log.info("UUID ${sertifikatData.uuid}")
             log.info("CRL sjekk feilet, muligens manglende CRL cache for issuer")
             log.info("Dersom dette ikke skulle feilet, vurder å oppdatere application properties med disse verdiene")
             log.info("DN: ${sertifikat.issuerX500Principal.name}")
@@ -163,22 +164,22 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         log.info("UUID ${sertifikatData.uuid} er et ${getSEIDVersion(sertifikat)} sertifikat")
         val ssn = ssnCache.getSSN(sertifikat)
         if (ssn == null || !sjekkCRL) {
-            log.info("SSN finnes ikke i cache, sjekker OCSP")
+            log.info("UUID ${sertifikatData.uuid} SSN finnes ikke i cache, sjekker OCSP")
             return try {
                 sjekkOCSP(sertifikatData)
             }
             catch (e: Exception) {
                 if(sjekkCRL) {
-                    log.warn("OCSP sjekk feilet, sjekker CRL", e)
+                    log.warn("UUID ${sertifikatData.uuid} OCSP sjekk feilet, sjekker CRL", e)
                     sjekkCRL(sertifikatData, null)
                 }
                 else {
-                    log.warn("OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
+                    log.warn("UUID ${sertifikatData.uuid} OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
                     throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(sertifikatData))
                 }
             }
         } else {
-            log.info("SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
+            log.info("UUID ${sertifikatData.uuid} SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
             return if (sjekkCRL) {
                 sjekkCRL(sertifikatData, ssn)
             }
