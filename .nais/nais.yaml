@@ -46,7 +46,9 @@ spec:
         - application: emottak-signaturverifikator
   filesFrom:
     - secret: emottak-sertifikatvalidator-secrets
+      mountPath: /var/run/secrets
     - secret: emottak-sertifikatvalidator-truststore
+      mountPath: /var/run/truststore
   env:
     - name: TRUSTSTORE_PATH
       value: /var/run/secrets/truststore.jks
