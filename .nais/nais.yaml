@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/Opaque
+metadata:
+  name: emottak-sertifikatvalidator-truststore
+  namespace: team-emottak
+  labels:
+    team: team-emottak
+data:
+  catruststore.jks: "{{truststore.file}}"
+
+---
+
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
@@ -46,6 +59,7 @@ spec:
         - application: emottak-signaturverifikator
   filesFrom:
     - secret: emottak-sertifikatvalidator-secrets
+    - secret: emottak-sertifikatvalidator-truststore
   env:
     - name: TRUSTSTORE_PATH
       value: /var/run/secrets/truststore.jks
