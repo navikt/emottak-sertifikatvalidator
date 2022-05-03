@@ -40,7 +40,14 @@ jobs:
     runs-on: "ubuntu-18.04"
     steps:
     - uses: "actions/checkout@v3"
-    - name: "Deploy to DEV"
+    - name: "Deploy secret to DEV"
+      uses: "nais/deploy/actions/deploy@v1"
+      env:
+        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
+        "CLUSTER": "dev-fss"
+        "RESOURCE": ".nais/secrets.yaml"
+        "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_DEV }}"
+    - name: "Deploy app to DEV"
       uses: "nais/deploy/actions/deploy@v1"
       env:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
