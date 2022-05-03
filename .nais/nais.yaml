@@ -7,7 +7,7 @@ metadata:
   labels:
     team: team-emottak
 data:
-  catruststore.jks: "{{truststore.file}}"
+  catruststore.jks: {{truststore.file}}
 
 ---
 
