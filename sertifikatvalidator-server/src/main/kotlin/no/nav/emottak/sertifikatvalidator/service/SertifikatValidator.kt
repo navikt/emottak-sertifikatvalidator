@@ -82,6 +82,9 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun sjekkSertifikatMotTrustedCa(sertifikatData: SertifikatData) {
+        val issuer = sertifikatData.sertifikat.issuerX500Principal.name
+        log.info("UUID ${sertifikatData.uuid} sjekker certificate chain")
+        log.info("UUID ${sertifikatData.uuid} er utstedt av '$issuer' sjekker certificate chain")
         val trustedRootCerts = KeyStoreHandler.getTrustedRootCerts()
         val intermediateCerts = KeyStoreHandler.getIntermediateCerts()
 
@@ -101,7 +104,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         try {
             builder.build(pkixParams) as PKIXCertPathBuilderResult
         } catch (e: CertPathBuilderException) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, "${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN ${sertifikatData.sertifikat.issuerX500Principal.name}", sertifikatData, e)
+            throw SertifikatError(HttpStatus.BAD_REQUEST, "UUID ${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatData, e)
         }
     }
 
