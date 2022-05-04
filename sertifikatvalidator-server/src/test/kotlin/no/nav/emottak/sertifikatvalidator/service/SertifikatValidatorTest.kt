@@ -26,7 +26,6 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.core.env.PropertySourcesPropertyResolver
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.jwt.JwtDecoder
@@ -36,7 +35,9 @@ import java.util.Date
 import javax.servlet.Filter
 
 
-@SpringBootTest
+@SpringBootTest(
+    properties = ["AZURE_APP_CLIENT_ID=test", "AZURE_APP_TENANT_ID=test"]
+)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SertifikatValidatorTest {
 
