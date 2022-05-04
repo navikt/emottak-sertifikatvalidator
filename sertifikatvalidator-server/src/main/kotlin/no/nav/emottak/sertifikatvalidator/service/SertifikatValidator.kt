@@ -51,7 +51,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     internal fun validateCertificate(sertifikatData: SertifikatData, dateInstant: Instant): SertifikatInfo {
         log.info("UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
-        log.info(sertifikatData.sertifikat.toString())
+        log.debug(sertifikatData.sertifikat.toString())
         try {
             sjekkOmSertifikatErSelvsignert(sertifikatData)
             sjekkSertifikatMotTrustedCa(sertifikatData)
