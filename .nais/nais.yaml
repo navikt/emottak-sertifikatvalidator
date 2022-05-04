@@ -51,7 +51,8 @@ spec:
       mountPath: /var/run/truststore
   env:
     - name: TRUSTSTORE_PATH
-      value: /var/run/secrets/truststore.jks
+      #value: /var/run/secrets/truststore.jks
+      value: /var/run/truststore/catruststore.jks
     - name: TRUSTSTORE_PWD
       value: /var/run/secrets/nais.io/vault/truststore_pwd
     - name: KEYSTORE_PATH
