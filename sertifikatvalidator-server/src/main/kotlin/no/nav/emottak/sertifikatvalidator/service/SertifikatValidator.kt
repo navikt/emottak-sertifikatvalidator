@@ -1,6 +1,7 @@
 package no.nav.emottak.sertifikatvalidator.service
 
 import no.nav.emottak.sertifikatvalidator.ALL_REVOCATION_CHECKS_DISABLED
+import no.nav.emottak.sertifikatvalidator.CERTIFICATE_ISSUER_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
@@ -13,6 +14,7 @@ import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
+import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler
 import no.nav.emottak.sertifikatvalidator.util.getOrganizationNumber
 import no.nav.emottak.sertifikatvalidator.util.getSEIDVersion
 import no.nav.emottak.sertifikatvalidator.util.isSelfSigned
@@ -29,10 +31,19 @@ import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import java.security.cert.CertPathBuilder
+import java.security.cert.CertPathBuilderException
+import java.security.cert.CertStore
 import java.security.cert.CertificateExpiredException
 import java.security.cert.CertificateNotYetValidException
+import java.security.cert.CollectionCertStoreParameters
+import java.security.cert.PKIXBuilderParameters
+import java.security.cert.PKIXCertPathBuilderResult
+import java.security.cert.TrustAnchor
+import java.security.cert.X509CertSelector
 import java.time.Instant
 import java.util.Date
+
 
 @Service
 class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLChecker, val ssnCache: SsnCache) {
@@ -40,9 +51,10 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     internal fun validateCertificate(sertifikatData: SertifikatData, dateInstant: Instant): SertifikatInfo {
         log.info("UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
-        log.debug(sertifikatData.sertifikat.toString())
+        log.info(sertifikatData.sertifikat.toString())
         try {
             sjekkOmSertifikatErSelvsignert(sertifikatData)
+            sjekkSertifikatMotTrustedCa(sertifikatData)
 
             val certificateValidNow = certificateValidAtTime(sertifikatData, Instant.now())
             val certificateValidAtGivenTime = certificateValidAtTime(sertifikatData, dateInstant)
@@ -67,6 +79,30 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun checkLegacyCertificate(sertifikatData: SertifikatData): SertifikatInfo {
         return sjekkSertifikat(sertifikatData = sertifikatData, sjekkCRL = false, sjekkOCSP = true)
+    }
+
+    private fun sjekkSertifikatMotTrustedCa(sertifikatData: SertifikatData) {
+        val trustedRootCerts = KeyStoreHandler.getTrustedRootCerts()
+        val intermediateCerts = KeyStoreHandler.getIntermediateCerts()
+
+        val selector = X509CertSelector()
+        selector.certificate = sertifikatData.sertifikat
+        val trustAnchors = trustedRootCerts.map {
+            TrustAnchor(it, null)
+        }.toSet()
+
+        val pkixParams = PKIXBuilderParameters(trustAnchors, selector)
+        pkixParams.isRevocationEnabled = false
+
+        val intermediateCertStore = CertStore.getInstance("Collection", CollectionCertStoreParameters(intermediateCerts), "BC")
+        pkixParams.addCertStore(intermediateCertStore)
+
+        val builder = CertPathBuilder.getInstance("PKIX", "BC")
+        try {
+            builder.build(pkixParams) as PKIXCertPathBuilderResult
+        } catch (e: CertPathBuilderException) {
+            throw SertifikatError(HttpStatus.BAD_REQUEST, "${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN ${sertifikatData.sertifikat.issuerX500Principal.name}", sertifikatData, e)
+        }
     }
 
     private fun certificateValidAtTime(sertifikatData: SertifikatData, instant: Instant): Boolean {

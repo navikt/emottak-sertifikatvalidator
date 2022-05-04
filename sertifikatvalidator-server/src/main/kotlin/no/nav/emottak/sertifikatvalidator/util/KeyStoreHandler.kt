@@ -6,9 +6,11 @@ import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.style.RFC4519Style
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.http.HttpStatus
 import java.security.KeyStore
 import java.security.PrivateKey
+import java.security.Security
 import java.security.cert.X509Certificate
 
 class KeyStoreHandler {
@@ -31,6 +33,7 @@ class KeyStoreHandler {
         init {
             keyStore = createKeyStore()
             trustStore = createTrustStore()
+            Security.addProvider(BouncyCastleProvider());
         }
 
         private fun createTrustStore(): KeyStore {
@@ -76,6 +79,18 @@ class KeyStoreHandler {
             //        holders[i] = JcaX509CertificateHolder(chain[i])
             //    }
             //    return holders
+        }
+
+        internal fun getTrustedRootCerts(): Set<X509Certificate> {
+            return getTrustStoreCertificates().filter { isSelfSigned(it) }.toSet()
+        }
+
+        internal fun getIntermediateCerts(): Set<X509Certificate> {
+            return getTrustStoreCertificates().filter { !isSelfSigned(it) }.toSet()
+        }
+
+        private fun getTrustStoreCertificates(): Set<X509Certificate> {
+            return trustStore.aliases().toList().map { alias -> trustStore.getCertificate(alias) as X509Certificate }.toSet()
         }
     }
 }
