@@ -126,24 +126,28 @@ internal fun createSertifikatInfoFromOCSPResponse(
     val certStatus: CertificateStatus? = singleResponse.certStatus
     var status = SertifikatStatus.UKJENT
     val beskrivelse: String
-    if (certStatus == null) {
-        status = SertifikatStatus.OK
-        beskrivelse = SERTIFIKAT_IKKE_REVOKERT
-    } else if (certStatus is RevokedStatus) {
-        status = SertifikatStatus.REVOKERT
-        beskrivelse = if (certStatus.hasRevocationReason()) {
-            RevocationReason.getRevocationReason(certStatus.revocationReason)
-        } else {
-            REVOKASJON_STATUS_MANGLER
+    when (certStatus) {
+        null -> {
+            status = SertifikatStatus.OK
+            beskrivelse = SERTIFIKAT_IKKE_REVOKERT
         }
-        log.warn("$SERTIFIKAT_REVOKERT: $beskrivelse")
-    } else if (certStatus is UnknownStatus) {
-
-        log.warn(REVOKASJON_STATUS_UKJENT)
-        beskrivelse = REVOKASJON_STATUS_UKJENT
-    } else {
-        log.warn(REVOKASJON_STATUS_FEILET)
-        beskrivelse = REVOKASJON_STATUS_FEILET
+        is RevokedStatus -> {
+            status = SertifikatStatus.REVOKERT
+            beskrivelse = if (certStatus.hasRevocationReason()) {
+                RevocationReason.getRevocationReason(certStatus.revocationReason)
+            } else {
+                REVOKASJON_STATUS_MANGLER
+            }
+            log.warn("$SERTIFIKAT_REVOKERT: $beskrivelse")
+        }
+        is UnknownStatus -> {
+            log.warn(REVOKASJON_STATUS_UKJENT)
+            beskrivelse = REVOKASJON_STATUS_UKJENT
+        }
+        else -> {
+            log.warn(REVOKASJON_STATUS_FEILET)
+            beskrivelse = REVOKASJON_STATUS_FEILET
+        }
     }
     return SertifikatInfo(
         serienummer = certificate.serialNumber.toString(),

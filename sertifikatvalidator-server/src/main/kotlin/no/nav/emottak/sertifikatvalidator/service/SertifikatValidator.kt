@@ -83,8 +83,8 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikatMotTrustedCa(sertifikatData: SertifikatData) {
         val issuer = sertifikatData.sertifikat.issuerX500Principal.name
-        log.info("UUID ${sertifikatData.uuid} sjekker certificate chain")
-        log.info("UUID ${sertifikatData.uuid} er utstedt av $issuer")
+        log.debug("UUID ${sertifikatData.uuid} sjekker certificate chain")
+        log.debug("UUID ${sertifikatData.uuid} er utstedt av $issuer")
         val trustedRootCerts = KeyStoreHandler.getTrustedRootCerts()
         val intermediateCerts = KeyStoreHandler.getIntermediateCerts()
 
@@ -143,7 +143,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             val crlRevocationInfo =
                 crlChecker.getCRLRevocationInfo(sertifikat.issuerX500Principal.name, sertifikat.serialNumber)
             if (crlRevocationInfo.revoked) {
-                log.info("UUID ${sertifikatData.uuid} Sertifikat revokert (CRL)")
+                log.warn("UUID ${sertifikatData.uuid} Sertifikat revokert (CRL)")
                 return sertifikatRevokert(sertifikatData, crlRevocationInfo.revocationReason)
             }
             return sertifikatOK(sertifikatData, ssn)
@@ -171,7 +171,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             ssnCache.updateSSNCacheValue(sertifikat, fnr)
         }
         if (ocspResponse.status == SertifikatStatus.REVOKERT) {
-            log.info("UUID ${sertifikatData.uuid} Sertifikat revokert (OCSP)")
+            log.warn("UUID ${sertifikatData.uuid} Sertifikat revokert (OCSP)")
             return ocspResponse
         }
         return sertifikatOK(sertifikatData, fnr)
@@ -181,8 +181,8 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         val sertifikat = sertifikatData.sertifikat
         val seidVersion = getSEIDVersion(sertifikat)
         val orgnummer = getOrganizationNumber(sertifikat)
-        log.info("UUID ${sertifikatData.uuid} er et virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
-        log.info("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat med orgnummer $orgnummer")
+        log.debug("UUID ${sertifikatData.uuid} er et virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
+        log.debug("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat med orgnummer $orgnummer")
         if (seidVersion == SEIDVersion.SEID20 && orgnummer.isNullOrEmpty()) {
             log.warn("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat og orgnummeruthenting feilet!")
         }
@@ -193,17 +193,17 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 sjekkOCSP(sertifikatData)
         } catch (e: Exception) {
             log.warn("UUID ${sertifikatData.uuid} Sjekk av CRL feilet, sjekker OCSP", e)
-            if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(sertifikatData))
+            if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(sertifikatData), e)
         }
     }
 
     private fun sjekkPersonligSertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         val sertifikat = sertifikatData.sertifikat
-        log.info("UUID ${sertifikatData.uuid} er et personlig sertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
-        log.info("UUID ${sertifikatData.uuid} er et ${getSEIDVersion(sertifikat)} sertifikat")
+        log.debug("UUID ${sertifikatData.uuid} er et personlig sertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
+        log.debug("UUID ${sertifikatData.uuid} er et ${getSEIDVersion(sertifikat)} sertifikat")
         val ssn = ssnCache.getSSN(sertifikat)
         if (ssn == null || !sjekkCRL) {
-            log.info("UUID ${sertifikatData.uuid} SSN finnes ikke i cache, sjekker OCSP")
+            log.debug("UUID ${sertifikatData.uuid} SSN finnes ikke i cache, sjekker OCSP")
             return try {
                 sjekkOCSP(sertifikatData)
             }
@@ -218,13 +218,8 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 }
             }
         } else {
-            log.info("UUID ${sertifikatData.uuid} SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
-            return if (sjekkCRL) {
-                sjekkCRL(sertifikatData, ssn)
-            }
-            else {
-                sjekkOCSP(sertifikatData)
-            }
+            log.debug("UUID ${sertifikatData.uuid} SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
+            return sjekkCRL(sertifikatData, ssn)
         }
     }
 }

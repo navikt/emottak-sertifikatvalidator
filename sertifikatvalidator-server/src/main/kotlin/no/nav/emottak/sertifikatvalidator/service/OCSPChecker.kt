@@ -48,8 +48,8 @@ import java.security.cert.X509Certificate
 @Service
 class OCSPChecker(val webClient: RestTemplate) {
 
-    private val ACCESS_IDENTIFIER_OCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
-    private val SSN_POLICY_ID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
+    private val accessIdentifierOCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
+    private val ssnPolicyID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
     private val bcProvider = BouncyCastleProvider()
 
     fun getOCSPStatus(sertifikatData: SertifikatData): SertifikatInfo {
@@ -105,11 +105,11 @@ class OCSPChecker(val webClient: RestTemplate) {
     }
 
     private fun getSsn(sr: SingleResp): String {
-        return getSsn(sr.getExtension(SSN_POLICY_ID))
+        return getSsn(sr.getExtension(ssnPolicyID))
     }
 
     private fun getSsn(bresp: BasicOCSPResp): String {
-        return getSsn(bresp.getExtension(SSN_POLICY_ID))
+        return getSsn(bresp.getExtension(ssnPolicyID))
     }
 
     private fun getSsn(ssnExtension: Extension?): String {
@@ -188,7 +188,7 @@ class OCSPChecker(val webClient: RestTemplate) {
     }
 
     private fun getOCSPUrl(certificate: X509Certificate): String {
-        val url = getAuthorityInfoAccess(certificate, ACCESS_IDENTIFIER_OCSP)
+        val url = getAuthorityInfoAccess(certificate, accessIdentifierOCSP)
         log.info("OCSP URL: $url")
         return url
     }
@@ -281,7 +281,7 @@ class OCSPChecker(val webClient: RestTemplate) {
     private fun addSsnExtension(certificate: X509Certificate, extensionsGenerator: ExtensionsGenerator) {
         if (!isVirksomhetssertifikat(certificate)) {
             log.info("adding SSN extension")
-            extensionsGenerator.addExtension(SSN_POLICY_ID, false, DEROctetString(byteArrayOf(0)))
+            extensionsGenerator.addExtension(ssnPolicyID, false, DEROctetString(byteArrayOf(0)))
         }
     }
 }
