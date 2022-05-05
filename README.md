@@ -1,6 +1,17 @@
+[![Build and deploy emottak-sertifikatvalidator](https://github.com/navikt/emottak-sertifikatvalidator/actions/workflows/main.yaml/badge.svg?branch=master)](https://github.com/navikt/emottak-sertifikatvalidator/actions/workflows/main.yaml)
 
 # emottak-sertifikatvalidator
-Application for validating certificates
+Tjeneste for å validere sertifikater utstedt av Buypass og Commfides.
+Tjenesten er delt i to komponenter, en server med REST-endepunkt, samt en klientimplementasjon som wrapper 
+REST-tjenestene i et bibliotek man kan bruke som en dependency ved behov.
+
+### Server
+Tjenestene for verifikasjon av signaturer finnes i [dev](https://emottak-sertifikatvalidator.dev.intern.nav.no/internal/swagger-ui/index.html)
+og [prod](https://emottak-sertifikatvalidator.intern.nav.no/internal/swagger-ui/index.html)
+
+### Klient
+For detaljer rundt bruk av klientbiblioteket, les [klient-readme](sertifikatvalidator-klient/README.md).
+ 
 
 ## Technologies used
 * Kotlin
