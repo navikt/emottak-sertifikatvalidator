@@ -6,8 +6,10 @@ springdoc:
 
 logging:
   level:
-    web: INFO
-    no.nav.emottak.sertifikatvalidator: DEBUG
+    no.nav.emottak.sertifikatvalidator.service.SertifikatValidator: DEBUG
+    no.nav.emottak.sertifikatvalidator.service.CRLChecker: DEBUG
+    no.nav.emottak.sertifikatvalidator.service.OCSPChecker: DEBUG
+    no.nav.emottak.sertifikatvalidator.service.SsnCache: DEBUG
 
 spring:
   security:

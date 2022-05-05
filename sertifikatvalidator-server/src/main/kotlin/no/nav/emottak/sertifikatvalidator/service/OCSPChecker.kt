@@ -77,7 +77,7 @@ class OCSPChecker(val webClient: RestTemplate) {
         verifyNonce(requestNonce, basicOCSPResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce))
 
         val ocspCertificates = basicOCSPResponse.certs
-        log.info("Certificates in response: " + ocspCertificates.size)
+        log.debug("Certificates in response: " + ocspCertificates.size)
 
         verifyOCSPCerts(basicOCSPResponse, ocspCertificates, ocspResponderCertificate)
         val certstat = basicOCSPResponse.responses
@@ -153,7 +153,7 @@ class OCSPChecker(val webClient: RestTemplate) {
             } else {
                 val cert = certificates[0]
                 verifyProvider(cert, X500Name(ocspResponderCertificate.subjectX500Principal.name))
-                log.info("Verifying certificate " + cert.subject.toString())
+                log.debug("Verifying certificate " + cert.subject.toString())
                 if (!basicOCSPResponse.isSignatureValid(contentVerifierProviderBuilder.build(cert))) {
                     log.error("OCSP response failed to verify")
                     throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "OCSP response failed to verify")
@@ -189,7 +189,7 @@ class OCSPChecker(val webClient: RestTemplate) {
 
     private fun getOCSPUrl(certificate: X509Certificate): String {
         val url = getAuthorityInfoAccess(certificate, accessIdentifierOCSP)
-        log.info("OCSP URL: $url")
+        log.debug("OCSP URL: $url")
         return url
     }
 
@@ -280,7 +280,7 @@ class OCSPChecker(val webClient: RestTemplate) {
 
     private fun addSsnExtension(certificate: X509Certificate, extensionsGenerator: ExtensionsGenerator) {
         if (!isVirksomhetssertifikat(certificate)) {
-            log.info("adding SSN extension")
+            log.debug("adding SSN extension")
             extensionsGenerator.addExtension(ssnPolicyID, false, DEROctetString(byteArrayOf(0)))
         }
     }

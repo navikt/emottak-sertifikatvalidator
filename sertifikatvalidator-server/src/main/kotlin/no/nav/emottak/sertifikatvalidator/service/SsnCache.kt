@@ -35,7 +35,7 @@ class SsnCache {
 
     internal fun cacheCount(): Int {
         val ssnCount = ssnCache.size
-        log.info("ssnCache contains $ssnCount values")
+        log.debug("ssnCache contains $ssnCount values")
         return ssnCount
     }
 }
