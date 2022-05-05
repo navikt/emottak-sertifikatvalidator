@@ -7,10 +7,7 @@ springdoc:
 logging:
   level:
     web: INFO
-    no:
-      nav:
-        emottak:
-          sertifikatvalidator: DEBUG
+    no.nav.emottak.sertifikatvalidator: DEBUG
 
 spring:
   security:
