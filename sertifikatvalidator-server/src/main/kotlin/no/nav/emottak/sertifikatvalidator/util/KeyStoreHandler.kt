@@ -60,7 +60,10 @@ class KeyStoreHandler {
                     return alias
                 }
             }
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke sertifikat for signering for issuer DN: $issuerDN")
+            //TODO
+            log.warn("Fant ikke sertifikat for signering for issuer DN: $issuerDN, forsøker med test-alias 'nav_test4ca3_nonrep'")
+            return "nav_test4ca3_nonrep"
+            //throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke sertifikat for signering for issuer DN: $issuerDN")
         }
 
         internal fun getSignerKey(alias: String): PrivateKey {
