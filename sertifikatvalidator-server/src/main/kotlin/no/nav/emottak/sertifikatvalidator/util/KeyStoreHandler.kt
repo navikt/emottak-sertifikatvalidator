@@ -56,7 +56,7 @@ class KeyStoreHandler {
                 val cert = keyStore.getCertificate(alias) as X509Certificate
                 if (RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name)) &&
                     RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))) {
-                    log.info("Found signer certificate for $issuerDN ($alias)")
+                    log.debug("Found signer certificate for $issuerDN ($alias)")
                     return alias
                 }
             }
