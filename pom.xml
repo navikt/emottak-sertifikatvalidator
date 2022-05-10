@@ -27,6 +27,7 @@
 		<jackson-module-kotlin.version>2.13.2</jackson-module-kotlin.version>
 		<jackson-databind.version>2.13.2.2</jackson-databind.version>
 		<okhttp.version>4.9.3</okhttp.version>
+		<logstash-logback-encoder.version>7.1.1</logstash-logback-encoder.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -69,6 +70,11 @@
 				<artifactId>mockwebserver</artifactId>
 				<version>${okhttp.version}</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.logstash.logback</groupId>
+				<artifactId>logstash-logback-encoder</artifactId>
+				<version>${logstash-logback-encoder.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
