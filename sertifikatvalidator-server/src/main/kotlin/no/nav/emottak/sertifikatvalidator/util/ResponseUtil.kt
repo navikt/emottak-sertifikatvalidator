@@ -1,5 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.util
 
+import net.logstash.logback.marker.Markers.appendEntries
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_FEILET
 import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_MANGLER
@@ -42,8 +43,17 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntit
     }
 }
 
-private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo) =
-    ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
+private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
+    val fieldMap = mapOf(
+        Pair("status", httpStatus.value()),
+        Pair("sertifikatStatus", sertifikatInfo.status),
+        Pair("sertifikatSeid", sertifikatInfo.seid),
+        Pair("sertifikatUtsteder", sertifikatInfo.utsteder),
+        Pair("sertifikatType", sertifikatInfo.type)
+    )
+    log.info(appendEntries(fieldMap), "Sertifikatvalidering response returnert")
+    return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
+}
 
 internal fun sertifikatSelvsignert(sertifikatData: SertifikatData) =
     createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.FEIL_MED_SERTIFIKAT, SERTIFIKAT_SELF_SIGNED)

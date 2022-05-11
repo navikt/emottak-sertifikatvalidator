@@ -28,6 +28,7 @@
 		<jackson-databind.version>2.13.2.2</jackson-databind.version>
 		<okhttp.version>4.9.3</okhttp.version>
 		<logstash-logback-encoder.version>7.1.1</logstash-logback-encoder.version>
+		<logback-classic.version>1.2.11</logback-classic.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -75,6 +76,11 @@
 				<groupId>net.logstash.logback</groupId>
 				<artifactId>logstash-logback-encoder</artifactId>
 				<version>${logstash-logback-encoder.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback-classic.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
