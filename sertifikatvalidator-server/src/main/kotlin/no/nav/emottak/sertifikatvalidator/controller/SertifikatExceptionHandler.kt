@@ -20,7 +20,7 @@ internal class SertifikatExceptionHandler {
 
     @ExceptionHandler(SertifikatError::class)
     fun handleSertifikatError(req: HttpServletRequest, ex: SertifikatError): ResponseEntity<SertifikatInfo?> {
-        val uuid = ex.sertifikatData ?: "UKJENT ID"
+        val uuid = ex.sertifikatData?.uuid ?: "UKJENT ID"
         val message = ex.localizedMessage
         if (ex.logStackTrace) {
             log.error("UUID $uuid $message", ex)
@@ -31,7 +31,7 @@ internal class SertifikatExceptionHandler {
             log.debug("UUID $uuid $message", ex)
         }
         val body = createResponseBody(ex)
-        log.info(Markers.appendEntries(createFieldMap(ex.statusCode, body)), "Sertifikatvalidering response returnert")
+        log.warn(Markers.appendEntries(createFieldMap(ex.statusCode, body)), "Sertifikatvalidering response returnert")
         return ResponseEntity.status(ex.statusCode).body(body)
     }
 

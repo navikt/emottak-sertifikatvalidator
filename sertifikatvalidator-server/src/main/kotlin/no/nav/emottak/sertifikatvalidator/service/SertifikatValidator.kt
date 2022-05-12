@@ -49,15 +49,14 @@ import java.util.Date
 class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLChecker, val ssnCache: SsnCache) {
 
 
-    internal fun validateCertificate(sertifikatData: SertifikatData, dateInstant: Instant): SertifikatInfo {
+    internal fun validateCertificate(sertifikatData: SertifikatData): SertifikatInfo {
         log.info("UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
         log.debug(sertifikatData.sertifikat.toString())
         try {
             sjekkOmSertifikatErSelvsignert(sertifikatData)
-            sjekkSertifikatMotTrustedCa(sertifikatData)
 
             val certificateValidNow = certificateValidAtTime(sertifikatData, Instant.now())
-            val certificateValidAtGivenTime = certificateValidAtTime(sertifikatData, dateInstant)
+            val certificateValidAtGivenTime = certificateValidAtTime(sertifikatData, sertifikatData.gyldighetsDato)
             return if (!certificateValidNow && !certificateValidAtGivenTime) {
                 throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(sertifikatData), false)
             } else if (!certificateValidNow) {
@@ -96,6 +95,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
         val pkixParams = PKIXBuilderParameters(trustAnchors, selector)
         pkixParams.isRevocationEnabled = false
+        pkixParams.date = Date.from(sertifikatData.gyldighetsDato)
 
         val intermediateCertStore = CertStore.getInstance("Collection", CollectionCertStoreParameters(intermediateCerts), "BC")
         pkixParams.addCertStore(intermediateCertStore)
@@ -124,6 +124,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         if (!sjekkCRL && !sjekkOCSP) {
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(sertifikatData))
         }
+        sjekkSertifikatMotTrustedCa(sertifikatData)
         return if (isVirksomhetssertifikat(sertifikatData.sertifikat)) {
             sjekkVirksomhetssertifikat(sertifikatData, sjekkCRL, sjekkOCSP)
         } else {

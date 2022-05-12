@@ -30,8 +30,8 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         val uuid = certificate.originalFilename ?: "FILENAME_MISSING_GENERATED_THIS_${UUID.randomUUID()}"
         val x509Certificate = createX509Certificate(certificate.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
-        val sertifikatData = SertifikatData(x509Certificate, uuid)
-        val sertifikatInfo = sertifikatValidator.validateCertificate(sertifikatData, validityDate)
+        val sertifikatData = SertifikatData(x509Certificate, uuid, validityDate)
+        val sertifikatInfo = sertifikatValidator.validateCertificate(sertifikatData)
         return createResponseEntity(sertifikatInfo)
     }
 
