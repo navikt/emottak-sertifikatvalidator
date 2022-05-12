@@ -14,6 +14,7 @@ import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_VALIDERING_OK
 import no.nav.emottak.sertifikatvalidator.UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
 import no.nav.emottak.sertifikatvalidator.model.RevocationReason
+import no.nav.emottak.sertifikatvalidator.model.SEIDVersion
 import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
@@ -44,15 +45,18 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntit
 }
 
 private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
-    val fieldMap = mapOf(
-        Pair("status", httpStatus.value()),
-        Pair("sertifikatStatus", sertifikatInfo.status),
-        Pair("sertifikatSeid", sertifikatInfo.seid),
-        Pair("sertifikatUtsteder", sertifikatInfo.utsteder),
-        Pair("sertifikatType", sertifikatInfo.type)
-    )
-    log.info(appendEntries(fieldMap), "Sertifikatvalidering response returnert")
+    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo)), "Sertifikatvalidering response returnert")
     return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
+}
+
+internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?): Map<String, Any> {
+    return mapOf(
+        Pair("status", httpStatus.value()),
+        Pair("sertifikatStatus", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
+        Pair("sertifikatSeid", sertifikatInfo?.seid ?: SEIDVersion.UKJENT),
+        Pair("sertifikatUtsteder", sertifikatInfo?.utsteder ?: "UKJENT"),
+        Pair("sertifikatType", sertifikatInfo?.type ?: "UKJENT")
+    )
 }
 
 internal fun sertifikatSelvsignert(sertifikatData: SertifikatData) =
