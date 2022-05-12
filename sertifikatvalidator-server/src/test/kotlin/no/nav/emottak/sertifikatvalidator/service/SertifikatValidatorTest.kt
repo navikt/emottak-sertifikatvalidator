@@ -60,8 +60,8 @@ class SertifikatValidatorTest {
     fun setUp() {
         System.setProperty("AZURE_APP_CLIENT_ID", "test")
         System.setProperty("AZURE_APP_TENANT_ID", "test")
-        System.setProperty("TRUSTSTORE_PATH", "classpath:dev_truststore.p12")
-        System.setProperty("KEYSTORE_PATH", "classpath:dev_truststore.p12")
+        System.setProperty("TRUSTSTORE_PATH", "classpath:dev_truststore.jks")
+        System.setProperty("KEYSTORE_PATH", "classpath:dev_truststore.jks")
         System.setProperty("TRUSTSTORE_PWD", "classpath:password")
         System.setProperty("KEYSTORE_PWD", "classpath:password")
     }
