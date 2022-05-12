@@ -94,6 +94,7 @@ abstract class MicroserviceClient {
             log.debug("Respons fra sertifikatvalidering ($url) er ikke gyldig", e)
             throw e
         } catch (e: Exception) {
+            log.warn("UUID $uuid Ukjent feil fra sertifikatvalidering: ${e.localizedMessage}")
             log.debug("Feil ved kall til $url", e)
             throw e
         }
