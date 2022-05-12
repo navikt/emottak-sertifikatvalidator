@@ -1,6 +1,7 @@
 package no.nav.emottak.sertifikatvalidator.util
 
 import net.logstash.logback.marker.Markers.appendEntries
+import no.nav.emottak.sertifikatvalidator.CERTIFICATE_ISSUER_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_FEILET
 import no.nav.emottak.sertifikatvalidator.REVOKASJON_STATUS_MANGLER
@@ -78,11 +79,12 @@ internal fun sertifikatOCSPValideringFeilet(sertifikatData: SertifikatData) =
 internal fun sertifikatOK(sertifikatData: SertifikatData, ssn: String?) =
     createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, ssn)
 
-internal fun sertifikatOK(sertifikatData: SertifikatData) =
-    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.OK, SERTIFIKAT_VALIDERING_OK, null)
+internal fun sertifikatOK(sertifikatData: SertifikatData) = sertifikatOK(sertifikatData, null)
 
+internal fun sertifikatUkjentSertifikatUtsteder(sertifikatData: SertifikatData) =
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.FEIL_MED_SERTIFIKAT, CERTIFICATE_ISSUER_UNKNOWN)
 internal fun sertifikatUkjentFeil(sertifikatData: SertifikatData) =
-    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.UKJENT, UKJENT_FEIL, null)
+    createSertifikatInfoFromCertificate(sertifikatData, SertifikatStatus.UKJENT, UKJENT_FEIL)
 
 internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String) =
     createSertifikatInfoFromCertificate(sertifikatData, status, beskrivelse, null)

@@ -25,6 +25,7 @@ import no.nav.emottak.sertifikatvalidator.util.sertifikatOK
 import no.nav.emottak.sertifikatvalidator.util.sertifikatRevokert
 import no.nav.emottak.sertifikatvalidator.util.sertifikatSelvsignert
 import no.nav.emottak.sertifikatvalidator.util.sertifikatUkjentFeil
+import no.nav.emottak.sertifikatvalidator.util.sertifikatUkjentSertifikatUtsteder
 import no.nav.emottak.sertifikatvalidator.util.sertifikatUtloept
 import org.bouncycastle.asn1.x509.CRLDistPoint
 import org.bouncycastle.asn1.x509.Extension
@@ -104,7 +105,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         try {
             builder.build(pkixParams) as PKIXCertPathBuilderResult
         } catch (e: CertPathBuilderException) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, "UUID ${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatData, e)
+            throw SertifikatError(HttpStatus.BAD_REQUEST, "UUID ${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatUkjentSertifikatUtsteder(sertifikatData), e)
         }
     }
 
