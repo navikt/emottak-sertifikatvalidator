@@ -5,6 +5,7 @@ import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_EMPTY_RESPONSE
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
+import no.nav.emottak.sertifikatvalidator.model.CertificateAuthorities
 import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
@@ -37,6 +38,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
@@ -48,6 +50,8 @@ import java.security.cert.X509Certificate
 @Service
 class OCSPChecker(val webClient: RestTemplate) {
 
+    @Autowired
+    internal lateinit var certificateAuthorities: CertificateAuthorities
     private val accessIdentifierOCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
     private val ssnPolicyID = ASN1ObjectIdentifier("2.16.578.1.16.3.2")
     private val bcProvider = BouncyCastleProvider()
@@ -187,10 +191,17 @@ class OCSPChecker(val webClient: RestTemplate) {
         }
     }
 
-    private fun getOCSPUrl(certificate: X509Certificate): String {
+    private fun getOCSPUrlFromCertificate(certificate: X509Certificate): String {
         val url = getAuthorityInfoAccess(certificate, accessIdentifierOCSP)
         log.debug("OCSP URL: $url")
         return url
+    }
+
+    private fun getOCSPUrl(certificate: X509Certificate): String {
+        val x500Name = X500Name(certificate.issuerX500Principal.name)
+        return certificateAuthorities.caList.firstOrNull {
+            it.x500Name == x500Name
+        }?.ocspUrl ?: getOCSPUrlFromCertificate(certificate)
     }
 
     private fun postOCSPRequest(url: String, encoded: ByteArray): OCSPResp {

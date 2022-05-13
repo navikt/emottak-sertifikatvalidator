@@ -4,9 +4,9 @@ import no.nav.emottak.sertifikatvalidator.CERTIFICATE_ISSUER_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.FAILED_TO_CREATE_CRL
 import no.nav.emottak.sertifikatvalidator.REVOCATION_REASON_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.log
-import no.nav.emottak.sertifikatvalidator.model.CRLHolder
+import no.nav.emottak.sertifikatvalidator.model.CAHolder
 import no.nav.emottak.sertifikatvalidator.model.CRLRevocationInfo
-import no.nav.emottak.sertifikatvalidator.model.CRLs
+import no.nav.emottak.sertifikatvalidator.model.CertificateAuthorities
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -34,8 +34,8 @@ import java.util.Date
 class CRLChecker(val webClient: RestTemplate) {
 
     @Autowired
-    internal lateinit var crls: CRLs
-    private var crlFiles: HashMap<X500Name, CRLHolder> = HashMap()
+    internal lateinit var certificateAuthorities: CertificateAuthorities
+    private var crlFiles: HashMap<X500Name, CAHolder> = HashMap()
     private val provider: Provider = BouncyCastleProvider()
 
     @EventListener(ApplicationReadyEvent::class)
@@ -60,24 +60,24 @@ class CRLChecker(val webClient: RestTemplate) {
         crlUpdateStatus
             .append("\n")
             .append("----------------------------------------\n")
-            .append("Periodisk oppdatering av alle CRLer: ${crls.crlList.size} CRLer konfigurert\n")
+            .append("Periodisk oppdatering av alle CRLer: ${certificateAuthorities.caList.size} CRLer konfigurert\n")
         var updateCounter = 0
-        crls.crlList.forEach { crl ->
+        certificateAuthorities.caList.forEach { crl ->
             val x500Name = X500Name(crl.dn)
             crlUpdateStatus.append("${crl.name}\n")
-            crlUpdateStatus.append("...henter oppdatert CRL fra ${crl.url}\n")
+            crlUpdateStatus.append("...henter oppdatert CRL fra ${crl.crlUrl}\n")
             try {
                 updateCRL(crl)
                 updateCounter++
                 crlFiles[x500Name] = crl
-                crlUpdateStatus.append("...oppdatert CRL fra ${crl.url}\n" )
+                crlUpdateStatus.append("...oppdatert CRL fra ${crl.crlUrl}\n" )
                 crlUpdateStatus.append("...oppdatert CRL er fra ${crl.crl?.thisUpdate}\n" )
             } catch (e: Exception) {
-                crlUpdateStatus.append("...OBS! oppdatering av CRL feilet fra ${crl.url}\n")
-                log.warn("Oppdatering av CRL feilet fra ${crl.url}", e)
+                crlUpdateStatus.append("...OBS! oppdatering av CRL feilet fra ${crl.crlUrl}\n")
+                log.warn("Oppdatering av CRL feilet fra ${crl.crlUrl}", e)
             }
         }
-        crlUpdateStatus.append("Periodisk oppdatering ferdig: $updateCounter/${crls.crlList.size} CRLer oppdatert\n")
+        crlUpdateStatus.append("Periodisk oppdatering ferdig: $updateCounter/${certificateAuthorities.caList.size} CRLer oppdatert\n")
         crlUpdateStatus.append("----------------------------------------")
         log.info(crlUpdateStatus.toString())
     }
@@ -97,27 +97,27 @@ class CRLChecker(val webClient: RestTemplate) {
         }
     }
 
-    private fun isCRLNullOrExpired(crlHolder: CRLHolder): Boolean {
-        val crl = crlHolder.crl
+    private fun isCRLNullOrExpired(CAHolder: CAHolder): Boolean {
+        val crl = CAHolder.crl
         if (crl == null) {
-            log.info("${crlHolder.url}: CRL eksisterer ikke, hent ny")
+            log.info("${CAHolder.crlUrl}: CRL eksisterer ikke, hent ny")
             return true
         }
         else if (crl.nextUpdate.before(Date())) {
-            log.info("${crlHolder.url}: CRL er utløpt, hent oppdatering")
+            log.info("${CAHolder.crlUrl}: CRL er utløpt, hent oppdatering")
             return true
         }
         return false
     }
 
-    private fun updateCRL(crlHolder: CRLHolder): X509CRL {
+    private fun updateCRL(CAHolder: CAHolder): X509CRL {
         try {
-            val crl = createCRL(getCrlFileFromUrl(crlHolder.url))
-            crlHolder.crl = crl
-            crlHolder.cachedDate = LocalDateTime.now()
+            val crl = createCRL(getCrlFileFromUrl(CAHolder.crlUrl))
+            CAHolder.crl = crl
+            CAHolder.cachedDate = LocalDateTime.now()
             return crl
         } catch (e: Exception) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "${crlHolder.url}: Kunne ikke oppdatere CRL", e)
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "${CAHolder.crlUrl}: Kunne ikke oppdatere CRL", e)
         }
     }
 

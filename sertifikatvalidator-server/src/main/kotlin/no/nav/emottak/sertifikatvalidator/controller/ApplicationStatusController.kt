@@ -32,7 +32,7 @@ class ApplicationStatusController(val crlChecker: CRLChecker, val ssnCache: SsnC
     @GetMapping("/crl", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.OK)
     fun getCrlList(): ResponseEntity<List<CRLStatus>> {
-        val crlsList = crlChecker.crls.crlList.stream().map { crlHolder -> CRLStatus(crlHolder = crlHolder) }.toList()
+        val crlsList = crlChecker.certificateAuthorities.caList.stream().map { crlHolder -> CRLStatus(CAHolder = crlHolder) }.toList()
         return ResponseEntity.ok(crlsList)
     }
 
