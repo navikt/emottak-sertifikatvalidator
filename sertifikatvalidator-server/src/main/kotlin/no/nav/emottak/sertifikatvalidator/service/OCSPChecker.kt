@@ -193,7 +193,6 @@ class OCSPChecker(val webClient: RestTemplate) {
 
     private fun getOCSPUrlFromCertificate(certificate: X509Certificate): String {
         val url = getAuthorityInfoAccess(certificate, accessIdentifierOCSP)
-        log.debug("OCSP URL: $url")
         return url
     }
 
@@ -205,6 +204,7 @@ class OCSPChecker(val webClient: RestTemplate) {
     }
 
     private fun postOCSPRequest(url: String, encoded: ByteArray): OCSPResp {
+        log.debug("OCSP URL: $url")
         val response = try {
             webClient.postForEntity(url, encoded, ByteArray::class.java)
         } catch (e: Exception) {
