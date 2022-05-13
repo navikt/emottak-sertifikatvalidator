@@ -36,6 +36,15 @@ class SsnCache {
     internal fun cacheCount(): Int {
         val ssnCount = ssnCache.size
         log.debug("ssnCache contains $ssnCount values")
+        ssnCache.forEach {
+            val maskedSSN = it.value.replace(Regex("^\\d{9}"), "**********")
+            if (maskedSSN.contains("*")) {
+                log.debug("SSN: $maskedSSN")
+            }
+            else {
+                log.debug("SSN length: ${maskedSSN.length}")
+            }
+        }
         return ssnCount
     }
 }
