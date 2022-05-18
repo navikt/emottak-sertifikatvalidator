@@ -31,7 +31,7 @@ internal class SertifikatExceptionHandler {
             log.debug("UUID $uuid $message", ex)
         }
         val body = createResponseBody(ex)
-        log.warn(Markers.appendEntries(createFieldMap(ex.statusCode, body)), "Sertifikatvalidering response returnert")
+        log.warn(Markers.appendEntries(createFieldMap(ex.statusCode, body, ex.javaClass.canonicalName)), "Sertifikatvalidering response returnert")
         return ResponseEntity.status(ex.statusCode).body(body)
     }
 

@@ -46,13 +46,14 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntit
 }
 
 private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
-    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo)), "Sertifikatvalidering response returnert")
+    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo, null)), "Sertifikatvalidering response returnert")
     return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 }
 
-internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?): Map<String, Any> {
+internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, exception: String?): Map<String, Any?> {
     return mapOf(
         Pair("statusCode", httpStatus.value()),
+        Pair("exception", exception),
         Pair("status", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatStatus", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatSeid", sertifikatInfo?.seid ?: SEIDVersion.UKJENT),
