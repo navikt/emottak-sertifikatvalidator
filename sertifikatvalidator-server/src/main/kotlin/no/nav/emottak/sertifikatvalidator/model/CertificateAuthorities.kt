@@ -17,6 +17,7 @@ data class CAHolder(
     val dn: String,
     val crlUrl: String,
     val ocspUrl: String,
+    val ocspSignerAlias: String,
     val x500Name: X500Name = X500Name(dn),
     var crl: X509CRL?,
     var cachedDate: LocalDateTime = LocalDateTime.now()
@@ -27,6 +28,7 @@ data class CRLStatus(
     val dn: String,
     val crlUrl: String,
     val ocspUrl: String,
+    val ocspSignerAlias: String,
     val cachedDate: LocalDateTime,
     val updatedDate: LocalDateTime
 ) {
@@ -35,6 +37,7 @@ data class CRLStatus(
         dn = CAHolder.dn,
         crlUrl = CAHolder.crlUrl,
         ocspUrl = CAHolder.ocspUrl,
+        ocspSignerAlias = CAHolder.ocspSignerAlias,
         cachedDate = CAHolder.cachedDate,
         updatedDate = CAHolder.crl?.thisUpdate?.toInstant()
             ?.atZone(ZoneId.systemDefault())

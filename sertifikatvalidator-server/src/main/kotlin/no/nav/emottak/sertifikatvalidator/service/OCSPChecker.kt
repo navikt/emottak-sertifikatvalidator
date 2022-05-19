@@ -221,7 +221,7 @@ class OCSPChecker(val webClient: RestTemplate) {
             val ocspReqBuilder = OCSPReqBuilder()
             val providerName = ocspResponderCertificate.subjectX500Principal.name
             val provider = X500Name(providerName)
-            val signerAlias = KeyStoreHandler.getSignerAlias(providerName)
+            val signerAlias = getSignerAlias(providerName)
             val signerCert = KeyStoreHandler.getSignerCert(signerAlias)
             val requestorName = signerCert.subjectX500Principal.name
 
@@ -253,6 +253,13 @@ class OCSPChecker(val webClient: RestTemplate) {
             log.error("UUID ${sertifikatData.uuid} $FAILED_TO_GENERATE_REVOCATION_REQUEST")
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, FAILED_TO_GENERATE_REVOCATION_REQUEST, sertifikatData, e)
         }
+    }
+
+    private fun getSignerAlias(providerName: String): String {
+        val x500Name = X500Name(providerName)
+        return certificateAuthorities.caList.firstOrNull {
+            it.x500Name == x500Name
+        }?.ocspSignerAlias ?: throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke sertifikat for signering for issuer DN: $providerName")
     }
 
     private fun getOcspResponderCertificate(certificateIssuer: String): X509Certificate {

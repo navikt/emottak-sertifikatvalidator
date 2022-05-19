@@ -19,8 +19,6 @@ class KeyStoreHandler {
         private const val KEYSTORE_TYPE = "JKS"
         private const val TRUSTSTORE_TYPE = "JKS"
 
-        private val signerSubjectDN = getEnvVar("SIGNER_SUBJECT_DN", "SERIALNUMBER=889640782, CN=ARBEIDS- OG VELFERDSETATEN, O=ARBEIDS- OG VELFERDSETATEN, C=NO")
-
         private val truststorePath = getEnvVar("TRUSTSTORE_PATH")
         private val truststorePwd = getFileAsString(getEnvVar("TRUSTSTORE_PWD"))
 
@@ -51,21 +49,6 @@ class KeyStoreHandler {
             return store
         }
 
-        internal fun getSignerAlias(issuerDN: String): String {
-            keyStore.aliases().toList().forEach { alias ->
-                val cert = keyStore.getCertificate(alias) as X509Certificate
-                if (RFC4519Style.INSTANCE.areEqual(X500Name(issuerDN), X500Name(cert.issuerX500Principal.name)) &&
-                    RFC4519Style.INSTANCE.areEqual(X500Name(signerSubjectDN), X500Name(cert.subjectX500Principal.name))) {
-                    log.debug("Found signer certificate for $issuerDN ($alias)")
-                    return alias
-                }
-            }
-            //TODO
-            log.warn("Fant ikke sertifikat for signering for issuer DN: $issuerDN, forsøker med test-alias 'nav_test4ca3_nonrep'")
-            return "nav_test4ca3_nonrep"
-            //throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke sertifikat for signering for issuer DN: $issuerDN")
-        }
-
         internal fun getSignerKey(alias: String): PrivateKey {
             return keyStore.getKey(alias, keystorePwd.toCharArray()) as PrivateKey
         }
@@ -76,12 +59,7 @@ class KeyStoreHandler {
 
         internal fun getCertificateChain(alias: String): Array<X509CertificateHolder> {
             val chain = keyStore.getCertificateChain(alias)
-            //val holders = arrayOfNulls<JcaX509CertificateHolder>(chain.size)
             return chain?.filterIsInstance<X509Certificate>()?.map { JcaX509CertificateHolder(it) }?.toTypedArray() ?: emptyArray()
-            //    for (i in chain.indices) {
-            //        holders[i] = JcaX509CertificateHolder(chain[i])
-            //    }
-            //    return holders
         }
 
         internal fun getTrustedRootCerts(): Set<X509Certificate> {
