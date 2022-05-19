@@ -50,10 +50,10 @@ private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: Sertifi
     return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 }
 
-internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, exception: String?): Map<String, Any?> {
+internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, exception: String?): Map<String, Any> {
     return mapOf(
         Pair("statusCode", httpStatus.value()),
-        Pair("exception", exception),
+        Pair("exception", exception ?: ""),
         Pair("status", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatStatus", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatSeid", sertifikatInfo?.seid ?: SEIDVersion.UKJENT),
