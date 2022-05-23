@@ -27,7 +27,6 @@ class SsnCache {
 
     @Scheduled(cron = "\${schedule.cron.cache.ssn}")
     private fun clearCache() {
-        //ssnCache["add"] = "added value to cache"
         log.info("Scheduled clearing of ssn cache. ${cacheCount()} items in cache before clearing.")
         ssnCache.clear()
         log.info("Scheduled clearing of ssn cache. ${cacheCount()} items in cache after clearing.")
@@ -36,15 +35,6 @@ class SsnCache {
     internal fun cacheCount(): Int {
         val ssnCount = ssnCache.size
         log.debug("ssnCache contains $ssnCount values")
-        ssnCache.forEach {
-            val maskedSSN = it.value.replace(Regex("^\\d{9}"), "**********")
-            if (maskedSSN.contains("*")) {
-                log.debug("SSN: $maskedSSN")
-            }
-            else {
-                log.debug("SSN length: ${maskedSSN.length}")
-            }
-        }
         return ssnCount
     }
 }
