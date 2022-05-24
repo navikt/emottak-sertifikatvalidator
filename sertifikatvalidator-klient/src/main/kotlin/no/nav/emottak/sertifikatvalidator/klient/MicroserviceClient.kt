@@ -121,13 +121,13 @@ private val cluster = run {
 }
 
 internal val isProduction = run {
+    val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
     environment.startsWith("prod", ignoreCase = true)
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getProperty(varName, System.getenv(varName)) ?: defaultValue ?: throw RuntimeException("Missing required variable $varName")
 
-private val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
 private val clientId = getEnvVar("AZURE_APP_CLIENT_ID")
 private val clientSecret = getEnvVar("AZURE_APP_CLIENT_SECRET")
 private val tenant = getEnvVar("AZURE_APP_TENANT_ID")
