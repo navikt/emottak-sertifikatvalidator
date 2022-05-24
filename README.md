@@ -1,4 +1,4 @@
-[![Build and deploy emottak-sertifikatvalidator](https://github.com/navikt/emottak-sertifikatvalidator/actions/workflows/main.yaml/badge.svg?branch=master)](https://github.com/navikt/emottak-sertifikatvalidator/actions/workflows/main.yaml)
+[![Build and deploy emottak-sertifikatvalidator](https://github.com/navikt/emottak-sertifikatvalidator/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/navikt/emottak-sertifikatvalidator/actions/workflows/main.yaml)
 
 # emottak-sertifikatvalidator
 Tjeneste for å validere sertifikater utstedt av Buypass og Commfides.
