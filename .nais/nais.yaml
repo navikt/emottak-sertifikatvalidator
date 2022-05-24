@@ -54,7 +54,8 @@ spec:
       #value: /var/run/secrets/truststore.jks
       value: /var/run/truststore/catruststore.jks
     - name: TRUSTSTORE_PWD
-      value: /var/run/secrets/nais.io/vault/truststore_pwd
+      value: /var/run/truststore/catruststore_pass
+      #value: /var/run/secrets/nais.io/vault/truststore_pwd
     - name: KEYSTORE_PATH
       value: /var/run/secrets/keystore.jks
     - name: KEYSTORE_PWD

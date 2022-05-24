@@ -12,6 +12,7 @@ import java.time.ZoneId
 data class CertificateAuthorities (
     val caList: List<CAHolder>
 )
+
 data class CAHolder(
     val name: String,
     val dn: String,
