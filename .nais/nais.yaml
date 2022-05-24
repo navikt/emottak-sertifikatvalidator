@@ -49,6 +49,8 @@ spec:
       mountPath: /var/run/secrets
     - secret: emottak-sertifikatvalidator-truststore
       mountPath: /var/run/truststore
+    - secret: emottak-sertifikatvalidator-keystore
+      mountPath: /var/run/keystore
   env:
     - name: TRUSTSTORE_PATH
       #value: /var/run/secrets/truststore.jks
@@ -57,8 +59,10 @@ spec:
       value: /var/run/truststore/catruststore_pass
       #value: /var/run/secrets/nais.io/vault/truststore_pwd
     - name: KEYSTORE_PATH
-      value: /var/run/secrets/keystore.jks
+      value: /var/run/keystore/keystore.jks
+      #value: /var/run/secrets/keystore.jks
     - name: KEYSTORE_PWD
-      value: /var/run/secrets/nais.io/vault/keystore_pwd
+      value: /var/run/keystore/keystore_pass
+      #value: /var/run/secrets/nais.io/vault/keystore_pwd
     - name: SIGNER_SUBJECT_DN
       value: {{signer.dn}}
