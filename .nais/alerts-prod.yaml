@@ -9,27 +9,29 @@ spec:
   receivers:
     slack:
       channel: "team-emottak-alerts-prod"
-      prependText: "<here> | "
+      prependText: "Alert! "
   alerts:
-  - alert: "emottak-sertifikatvalidator er nede"
-    description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace\
-      \ }}"
-    expr: "kube_deployment_status_replicas_available{deployment=\"emottak-sertifikatvalidator\"\
-      } > 0"
-    for: "2m"
-    action: "kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace\
-      \ }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace\
-      \ }}` for logger"
-    documentation: "https://github.com/navikt/team-emottak/somedoc"
-    sla: "Responder innen 1 time i kontortid"
-    severity: "danger"
-  - alert: "Mye feil i loggene"
-    expr: "(100 * sum by (log_app, log_namespace) (rate(logd_messages_total{log_app=\"\
-      emottak-sertifikatvalidator\",log_level=~\"Warning|Error\"}[3m])) / sum by (log_app,\
-      \ log_namespace) (rate(logd_messages_total{log_app=\"emottak-sertifikatvalidator\"}[3m])))\
-      \ > 10"
-    for: "3m"
-    action: "Sjekk loggene til app {{ $labels.log_app }} i namespace {{ $labels.log_namespace\
-      \ }} for å se hvorfor det er så mye feil"
-    sla: "Responder innen 1 time i kontortid"
-    severity: "warning"
+    - alert: "emottak-sertifikatvalidator er nede"
+      description: "App {{ $labels.deployment }} er nede i namespace {{ $labels.namespace }}"
+      expr: kube_deployment_status_replicas_available{deployment="emottak-sertifikatvalidator"} == 0
+      for: 2m
+      action: "Sjekk `kubectl describe pod {{ $labels.deployment }} -n {{ $labels.namespace }}` for events, og `kubectl logs {{ $labels.deployment }} -n {{ $labels.namespace }}` for logger"
+      documentation: "https://github.com/navikt/team-emottak/somedoc"
+      sla: "Responder innen 1 time i kontortid"
+      severity: "danger"
+    - alert: "emottak-sertifikatvalidator har mye feil i loggene"
+      expr: "(100 * sum by (log_app, log_namespace) (rate(logd_messages_total{log_app=\"emottak-sertifikatvalidator\",log_level=~\"Warning|Error\"}[3m])) / sum by (log_app, log_namespace) (rate(logd_messages_total{log_app=\"emottak-sertifikatvalidator\"}[3m]))) > 10"
+      for: "3m"
+      action: "Sjekk loggene til app {{ $labels.log_app }} i namespace {{ $labels.log_namespace }} for å se hvorfor det er så mye feil"
+      sla: "Responder innen 1 time i kontortid"
+      severity: "warning"
+    - alert: emottak-sertifikatvalidator har høy andel HTTP serverfeil (5xx responser)
+      severity: danger
+      expr: (100 * (sum by (backend) (rate(traefik_backend_requests_total{code=~"^5\\d\\d", backend=~"emottak-sertifikatvalidator.intern.nav.no/*"}[3m])) / sum by (backend) (rate(traefik_backend_requests_total{backend=~"emottak-sertifikatvalidator.intern.nav.no/*"}[3m])))) > 1
+      for: 3m
+      action: "Sjekk loggene for å se hvorfor {{ $labels.backend }} returnerer HTTP feilresponser"
+    - alert: emottak-sertifikatvalidator har høy andel HTTP klientfeil (4xx responser)
+      severity: warning
+      expr: (100 * (sum by (backend) (rate(traefik_backend_requests_total{code=~"^4\\d\\d", backend=~"emottak-sertifikatvalidator.intern.nav.no/*"}[3m])) / sum by (backend) (rate(traefik_backend_requests_total{backend=~"emottak-sertifikatvalidator.intern.nav.no/*"}[3m])))) > 10
+      for: 3m
+      action: "Sjekk loggene for å se hvorfor {{ $labels.backend }} returnerer HTTP feilresponser"
