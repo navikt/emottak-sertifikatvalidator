@@ -46,7 +46,7 @@ jobs:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
         "CLUSTER": "dev-fss"
         "RESOURCE": ".nais/secrets.yaml"
-        "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_DEV }},truststorePass=${{ secrets.TRUSTSTORE_PASS_DEV }},keystore=${{ secrets.TRUSTSTORE_FILE_DEV }},keystorePass=${{ secrets.TRUSTSTORE_PASS_DEV }}"
+        "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_DEV }},truststorePass=${{ secrets.TRUSTSTORE_PASS_DEV }},keystore=${{ secrets.KEYSTORE_FILE_DEV }},keystorePass=${{ secrets.KEYSTORE_PASS_DEV }}"
     - name: "Deploy app to DEV"
       uses: "nais/deploy/actions/deploy@v1"
       env:
@@ -54,26 +54,26 @@ jobs:
         "CLUSTER": "dev-fss"
         "RESOURCE": ".nais/nais.yaml"
         "VARS": ".nais/dev.yaml"
-#  "deployAppToProd":
-#    name: "Deploy to prod"
-#    needs: "deployAppToDev"
-#    runs-on: "ubuntu-18.04"
-#    steps:
-#    - uses: "actions/checkout@v3"
-#    - name: "Deploy secret to PROD"
-#      uses: "nais/deploy/actions/deploy@v1"
-#      env:
-#        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
-#        "CLUSTER": "prod-fss"
-#        "RESOURCE": ".nais/secrets.yaml"
-#        "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_PROD }},truststorePass=${{ secrets.TRUSTSTORE_PASS_PROD }},keystore=${{ secrets.TRUSTSTORE_FILE_PROD }},keystorePass=${{ secrets.TRUSTSTORE_PASS_PROD }}"
-#    - name: "Deploy app to PROD"
-#      uses: "nais/deploy/actions/deploy@v1"
-#      env:
-#        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
-#        "CLUSTER": "prod-fss"
-#        "RESOURCE": ".nais/nais.yaml"
-#        "VARS": ".nais/prod.yaml"
+  "deployAppToProd":
+    name: "Deploy to prod"
+    needs: "deployAppToDev"
+    runs-on: "ubuntu-18.04"
+    steps:
+    - uses: "actions/checkout@v3"
+    - name: "Deploy secret to PROD"
+      uses: "nais/deploy/actions/deploy@v1"
+      env:
+        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
+        "CLUSTER": "prod-fss"
+        "RESOURCE": ".nais/secrets.yaml"
+        "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_PROD }},truststorePass=${{ secrets.TRUSTSTORE_PASS_PROD }},keystore=${{ secrets.KEYSTORE_FILE_PROD }},keystorePass=${{ secrets.KEYSTORE_PASS_PROD }}"
+    - name: "Deploy app to PROD"
+      uses: "nais/deploy/actions/deploy@v1"
+      env:
+        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
+        "CLUSTER": "prod-fss"
+        "RESOURCE": ".nais/nais.yaml"
+        "VARS": ".nais/prod.yaml"
   "deployAlertsToDev":
     name: "Deploy alerts to dev"
     needs: "build"
@@ -87,16 +87,16 @@ jobs:
           "CLUSTER": "dev-fss"
           "RESOURCE": ".nais/alerts-dev.yaml"
           "VARS": ".nais/dev.yaml"
-#  "deployAlertsToProd":
-#    name: "Deploy alerts to prod"
-#    needs: "deployAlertsToDev"
-#    runs-on: "ubuntu-18.04"
-#    steps:
-#    - uses: "actions/checkout@v3"
-#    - name: "Deploy alerts to PROD"
-#      uses: "nais/deploy/actions/deploy@v1"
-#      env:
-#        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
-#        "CLUSTER": "prod-fss"
-#        "RESOURCE": ".nais/alerts-prod.yaml"
-#        "VARS": ".nais/prod.yaml"
+  "deployAlertsToProd":
+    name: "Deploy alerts to prod"
+    needs: "deployAlertsToDev"
+    runs-on: "ubuntu-18.04"
+    steps:
+    - uses: "actions/checkout@v3"
+    - name: "Deploy alerts to PROD"
+      uses: "nais/deploy/actions/deploy@v1"
+      env:
+        "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
+        "CLUSTER": "prod-fss"
+        "RESOURCE": ".nais/alerts-prod.yaml"
+        "VARS": ".nais/prod.yaml"

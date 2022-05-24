@@ -45,8 +45,8 @@ spec:
       rules:
         - application: emottak-signaturverifikator
   filesFrom:
-    - secret: emottak-sertifikatvalidator-secrets
-      mountPath: /var/run/secrets
+#    - secret: emottak-sertifikatvalidator-secrets
+#      mountPath: /var/run/secrets
     - secret: emottak-sertifikatvalidator-truststore
       mountPath: /var/run/truststore
     - secret: emottak-sertifikatvalidator-keystore
