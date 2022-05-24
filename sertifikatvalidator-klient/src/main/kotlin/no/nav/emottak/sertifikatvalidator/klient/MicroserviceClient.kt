@@ -14,7 +14,8 @@ import com.nimbusds.oauth2.sdk.auth.Secret
 import com.nimbusds.oauth2.sdk.id.ClientID
 import com.nimbusds.oauth2.sdk.token.AccessToken
 import no.nav.emottak.sertifikatvalidator.BACKEND_APPLICATION_NAME
-import no.nav.emottak.sertifikatvalidator.BACKEND_CLUSTER_NAME
+import no.nav.emottak.sertifikatvalidator.BACKEND_CLUSTER_DEV
+import no.nav.emottak.sertifikatvalidator.BACKEND_CLUSTER_PROD
 import no.nav.emottak.sertifikatvalidator.BACKEND_NAMESPACE
 import no.nav.emottak.sertifikatvalidator.SERVICE_URL_DEV
 import no.nav.emottak.sertifikatvalidator.SERVICE_URL_PROD
@@ -104,22 +105,34 @@ abstract class MicroserviceClient {
 internal val log: Logger = LoggerFactory.getLogger(MicroserviceClient::class.java)
 
 internal val serviceUrl = run {
-    val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
-    if (environment.startsWith("prod", ignoreCase = true)) {
+    if (isProduction) {
         SERVICE_URL_PROD
     } else {
         SERVICE_URL_DEV
     }
 }
 
+private val cluster = run {
+    if (isProduction) {
+        BACKEND_CLUSTER_PROD
+    } else {
+        BACKEND_CLUSTER_DEV
+    }
+}
+
+internal val isProduction = run {
+    environment.startsWith("prod", ignoreCase = true)
+}
+
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getProperty(varName, System.getenv(varName)) ?: defaultValue ?: throw RuntimeException("Missing required variable $varName")
 
+private val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
 private val clientId = getEnvVar("AZURE_APP_CLIENT_ID")
 private val clientSecret = getEnvVar("AZURE_APP_CLIENT_SECRET")
 private val tenant = getEnvVar("AZURE_APP_TENANT_ID")
 private val tokenEndpoint = "https://login.microsoftonline.com/$tenant/oauth2/v2.0/token"
-private const val scope = "api://$BACKEND_CLUSTER_NAME.$BACKEND_NAMESPACE.$BACKEND_APPLICATION_NAME/.default"
+private val scope = "api://$cluster.$BACKEND_NAMESPACE.$BACKEND_APPLICATION_NAME/.default"
 
 private class AccessTokenHolder {
 

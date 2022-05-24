@@ -32,6 +32,8 @@ const val SERVICE_URL_PROD =
 const val SERVICE_URL_DEV =
     "https://emottak-sertifikatvalidator.dev.intern.nav.no/api/valider/sertifikat"
 
-const val BACKEND_CLUSTER_NAME = "dev-fss"
+//NB Må endres dersom tjenesten skal kjøre i GCP
+const val BACKEND_CLUSTER_DEV = "dev-fss"
+const val BACKEND_CLUSTER_PROD = "prod-fss"
 const val BACKEND_NAMESPACE = "team-emottak"
 const val BACKEND_APPLICATION_NAME = "emottak-sertifikatvalidator"
