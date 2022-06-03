@@ -32,7 +32,7 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         val validityDate = date?.toInstant() ?: Instant.now()
         val sertifikatData = SertifikatData(x509Certificate, uuid, validityDate)
         val sertifikatInfo = sertifikatValidator.validateCertificate(sertifikatData)
-        return createResponseEntity(sertifikatInfo)
+        return createResponseEntity(sertifikatInfo, sertifikatData.uuid)
     }
 
 }

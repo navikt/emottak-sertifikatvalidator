@@ -1,5 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.service
 
+import net.logstash.logback.marker.Markers
 import no.nav.emottak.sertifikatvalidator.FAILED_TO_GENERATE_REVOCATION_REQUEST
 import no.nav.emottak.sertifikatvalidator.OCSP_SIGNATURE_VERIFICATION_FAILED
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_EMPTY_RESPONSE
@@ -10,6 +11,7 @@ import no.nav.emottak.sertifikatvalidator.model.SertifikatData
 import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler
+import no.nav.emottak.sertifikatvalidator.util.createFieldMap
 import no.nav.emottak.sertifikatvalidator.util.createSertifikatInfoFromOCSPResponse
 import no.nav.emottak.sertifikatvalidator.util.getAuthorityInfoAccess
 import no.nav.emottak.sertifikatvalidator.util.getAuthorityInfoAccessObject
@@ -216,7 +218,7 @@ class OCSPChecker(val webClient: RestTemplate) {
 
     private fun createOCSPRequest(sertifikatData: SertifikatData, ocspResponderCertificate: X509Certificate): OCSPReq {
         try {
-            log.debug("UUID ${sertifikatData.uuid} Sjekker sertifikat")
+            log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sjekker sertifikat")
             val certificate = sertifikatData.sertifikat
             val ocspReqBuilder = OCSPReqBuilder()
             val providerName = ocspResponderCertificate.subjectX500Principal.name
@@ -250,7 +252,7 @@ class OCSPChecker(val webClient: RestTemplate) {
             log.debug("Request signed: ${request.isSigned}")
             return request
         } catch (e: Exception) {
-            log.error("UUID ${sertifikatData.uuid} $FAILED_TO_GENERATE_REVOCATION_REQUEST")
+            log.error(Markers.appendEntries(createFieldMap(sertifikatData)), "$FAILED_TO_GENERATE_REVOCATION_REQUEST")
             throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, FAILED_TO_GENERATE_REVOCATION_REQUEST, sertifikatData, e)
         }
     }

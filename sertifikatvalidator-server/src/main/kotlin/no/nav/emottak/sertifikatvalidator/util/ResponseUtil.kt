@@ -33,25 +33,26 @@ import java.util.Date
 import java.util.Locale
 
 
-internal fun createResponseEntity(sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
+internal fun createResponseEntity(sertifikatInfo: SertifikatInfo, uuid: String): ResponseEntity<SertifikatInfo> {
     return when(sertifikatInfo.status) {
-        SertifikatStatus.OK -> createResponseEntity(HttpStatus.OK, sertifikatInfo)
-        SertifikatStatus.FEIL_MED_INPUT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo)
-        SertifikatStatus.UTGAATT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo)
-        SertifikatStatus.REVOKERT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo)
-        SertifikatStatus.FEIL_MED_SERTIFIKAT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo)
-        SertifikatStatus.FEIL_MED_TJENESTEN -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo)
-        SertifikatStatus.UKJENT -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo)
+        SertifikatStatus.OK -> createResponseEntity(HttpStatus.OK, sertifikatInfo, uuid)
+        SertifikatStatus.FEIL_MED_INPUT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo, uuid)
+        SertifikatStatus.UTGAATT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo, uuid)
+        SertifikatStatus.REVOKERT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo, uuid)
+        SertifikatStatus.FEIL_MED_SERTIFIKAT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo, uuid)
+        SertifikatStatus.FEIL_MED_TJENESTEN -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo, uuid)
+        SertifikatStatus.UKJENT -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, sertifikatInfo, uuid)
     }
 }
 
-private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo): ResponseEntity<SertifikatInfo> {
-    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo, null)), "Sertifikatvalidering response returnert")
+private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo, uuid: String): ResponseEntity<SertifikatInfo> {
+    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo, uuid, null)), "Sertifikatvalidering response returnert")
     return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 }
 
-internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, exception: String?): Map<String, Any> {
+internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, uuid: String, exception: String?): Map<String, Any> {
     return mapOf(
+        Pair("id", uuid),
         Pair("statusCode", httpStatus.value()),
         //Pair("exception", exception ?: ""),
         Pair("status", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
@@ -59,6 +60,18 @@ internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatIn
         Pair("sertifikatSeid", sertifikatInfo?.seid ?: SEIDVersion.UKJENT),
         Pair("sertifikatUtsteder", sertifikatInfo?.utsteder ?: "UKJENT"),
         Pair("sertifikatType", sertifikatInfo?.type ?: "UKJENT")
+    )
+}
+
+internal fun createFieldMap(sertifikatData: SertifikatData): Map<String, Any> {
+    return mapOf(
+        Pair("id", sertifikatData.uuid),
+    )
+}
+
+internal fun createFieldMap(uuid: String): Map<String, Any> {
+    return mapOf(
+        Pair("id", uuid),
     )
 }
 
@@ -92,10 +105,10 @@ internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData,
 
 internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
         if (getSertifikatType(sertifikatData.sertifikat) == SertifikatType.VIRKSOMHET) {
-            log.info("UUID ${sertifikatData.uuid} sertifikatvalidering $status")
+            log.info(appendEntries(createFieldMap(sertifikatData)), "sertifikatvalidering $status")
             createVirksomhetssertifikatInfo(sertifikatData, status, beskrivelse)
         } else {
-            log.info("UUID ${sertifikatData.uuid} sertifikatvalidering $status")
+            log.info(appendEntries(createFieldMap(sertifikatData)), "sertifikatvalidering $status")
             createPersonSertifikatInfo(sertifikatData, status, beskrivelse, ssn)
         }
 

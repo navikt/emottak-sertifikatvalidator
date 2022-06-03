@@ -1,5 +1,6 @@
 package no.nav.emottak.sertifikatvalidator.service
 
+import net.logstash.logback.marker.Markers
 import no.nav.emottak.sertifikatvalidator.ALL_REVOCATION_CHECKS_DISABLED
 import no.nav.emottak.sertifikatvalidator.CERTIFICATE_ISSUER_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
@@ -15,6 +16,7 @@ import no.nav.emottak.sertifikatvalidator.model.SertifikatError
 import no.nav.emottak.sertifikatvalidator.model.SertifikatInfo
 import no.nav.emottak.sertifikatvalidator.model.SertifikatStatus
 import no.nav.emottak.sertifikatvalidator.util.KeyStoreHandler
+import no.nav.emottak.sertifikatvalidator.util.createFieldMap
 import no.nav.emottak.sertifikatvalidator.util.getOrganizationNumber
 import no.nav.emottak.sertifikatvalidator.util.getSEIDVersion
 import no.nav.emottak.sertifikatvalidator.util.isSelfSigned
@@ -51,8 +53,8 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
 
     internal fun validateCertificate(sertifikatData: SertifikatData): SertifikatInfo {
-        log.info("UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
-        log.debug(sertifikatData.sertifikat.toString())
+        log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), sertifikatData.sertifikat.toString())
         try {
             sjekkOmSertifikatErSelvsignert(sertifikatData)
 
@@ -83,8 +85,8 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikatMotTrustedCa(sertifikatData: SertifikatData) {
         val issuer = sertifikatData.sertifikat.issuerX500Principal.name
-        log.debug("UUID ${sertifikatData.uuid} sjekker certificate chain")
-        log.debug("UUID ${sertifikatData.uuid} er utstedt av $issuer")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sjekker certificate chain")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat utstedt av $issuer")
         val trustedRootCerts = KeyStoreHandler.getTrustedRootCerts()
         val intermediateCerts = KeyStoreHandler.getIntermediateCerts()
 
@@ -105,7 +107,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         try {
             builder.build(pkixParams) as PKIXCertPathBuilderResult
         } catch (e: CertPathBuilderException) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, "UUID ${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatUkjentSertifikatUtsteder(sertifikatData), e)
+            throw SertifikatError(HttpStatus.BAD_REQUEST, "id=${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatUkjentSertifikatUtsteder(sertifikatData), e)
         }
     }
 
@@ -145,22 +147,22 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             val crlRevocationInfo =
                 crlChecker.getCRLRevocationInfo(sertifikat.issuerX500Principal.name, sertifikat.serialNumber)
             if (crlRevocationInfo.revoked) {
-                log.warn("UUID ${sertifikatData.uuid} Sertifikat revokert (CRL)")
+                log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat revokert (CRL)")
                 return sertifikatRevokert(sertifikatData, crlRevocationInfo.revocationReason)
             }
             return sertifikatOK(sertifikatData, ssn)
         } catch (e: Exception) {
             val crlDistributionPoint = sertifikat.getExtensionValue(Extension.cRLDistributionPoints.toString())
             val crlDistributionPoints = CRLDistPoint.getInstance(JcaX509ExtensionUtils.parseExtensionValue(crlDistributionPoint))
-            log.info("-------------------------------------------------")
-            log.info("UUID ${sertifikatData.uuid}")
-            log.info("CRL sjekk feilet, muligens manglende CRL cache for issuer")
-            log.info("Dersom dette ikke skulle feilet, vurder å oppdatere application properties med disse verdiene")
-            log.info("DN: ${sertifikat.issuerX500Principal.name}")
+            log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "-------------------------------------------------")
+            log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "UUID ${sertifikatData.uuid}")
+            log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "CRL sjekk feilet, muligens manglende CRL cache for issuer")
+            log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "Dersom dette ikke skulle feilet, vurder å oppdatere application properties med disse verdiene")
+            log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "DN: ${sertifikat.issuerX500Principal.name}")
             crlDistributionPoints.distributionPoints.forEach {
-                log.info("CRL: ${it.distributionPoint.name}")
+                log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "CRL: ${it.distributionPoint.name}")
             }
-            log.info("-------------------------------------------------")
+            log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "-------------------------------------------------")
             throw e
         }
     }
@@ -173,7 +175,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             ssnCache.updateSSNCacheValue(sertifikat, fnr)
         }
         if (ocspResponse.status == SertifikatStatus.REVOKERT) {
-            log.warn("UUID ${sertifikatData.uuid} Sertifikat revokert (OCSP)")
+            log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat revokert (OCSP)")
             return ocspResponse
         }
         return sertifikatOK(sertifikatData, fnr)
@@ -183,10 +185,10 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         val sertifikat = sertifikatData.sertifikat
         val seidVersion = getSEIDVersion(sertifikat)
         val orgnummer = getOrganizationNumber(sertifikat)
-        log.debug("UUID ${sertifikatData.uuid} er et virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
-        log.debug("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat med orgnummer $orgnummer")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat er et virksomhetssertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat er et $seidVersion sertifikat med orgnummer $orgnummer")
         if (seidVersion == SEIDVersion.SEID20 && orgnummer.isNullOrEmpty()) {
-            log.warn("UUID ${sertifikatData.uuid} er et $seidVersion sertifikat og orgnummeruthenting feilet!")
+            log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat er et $seidVersion sertifikat og orgnummeruthenting feilet!")
         }
         return try {
             if(sjekkCRL)
@@ -194,33 +196,33 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             else
                 sjekkOCSP(sertifikatData)
         } catch (e: Exception) {
-            log.warn("UUID ${sertifikatData.uuid} Sjekk av CRL feilet, sjekker OCSP", e)
+            log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "Sjekk av CRL feilet, sjekker OCSP", e)
             if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(sertifikatData), e)
         }
     }
 
     private fun sjekkPersonligSertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         val sertifikat = sertifikatData.sertifikat
-        log.debug("UUID ${sertifikatData.uuid} er et personlig sertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
-        log.debug("UUID ${sertifikatData.uuid} er et ${getSEIDVersion(sertifikat)} sertifikat")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat er et personlig sertifikat, sjekkCRL: $sjekkCRL, sjekkOCSP: $sjekkOCSP")
+        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat er et ${getSEIDVersion(sertifikat)} sertifikat")
         val ssn = ssnCache.getSSN(sertifikat)
         if (ssn == null || !sjekkCRL) {
-            log.debug("UUID ${sertifikatData.uuid} SSN finnes ikke i cache, sjekker OCSP")
+            log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "SSN finnes ikke i cache, sjekker OCSP")
             return try {
                 sjekkOCSP(sertifikatData)
             }
             catch (e: Exception) {
                 if(sjekkCRL) {
-                    log.warn("UUID ${sertifikatData.uuid} OCSP sjekk feilet, sjekker CRL", e)
+                    log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "OCSP sjekk feilet, sjekker CRL", e)
                     sjekkCRL(sertifikatData, null)
                 }
                 else {
-                    log.warn("UUID ${sertifikatData.uuid} OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
+                    log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
                     throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(sertifikatData))
                 }
             }
         } else {
-            log.debug("UUID ${sertifikatData.uuid} SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
+            log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "SSN finnes i cache, sjekkCRL = $sjekkCRL, sjekkOCSP = $sjekkOCSP")
             return sjekkCRL(sertifikatData, ssn)
         }
     }
