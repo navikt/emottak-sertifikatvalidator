@@ -46,15 +46,15 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo, uuid: String):
 }
 
 private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo, uuid: String): ResponseEntity<SertifikatInfo> {
-    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo, uuid, null)), "Sertifikatvalidering response returnert")
+    log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo, uuid)), "Sertifikatvalidering response returnert")
     return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
 }
 
-internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, uuid: String, exception: String?): Map<String, Any> {
+internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, uuid: String): Map<String, Any> {
     return mapOf(
         Pair("id", uuid),
+        Pair("mottakId", uuid),
         Pair("statusCode", httpStatus.value()),
-        //Pair("exception", exception ?: ""),
         Pair("status", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatStatus", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatSeid", sertifikatInfo?.seid ?: SEIDVersion.UKJENT),
@@ -66,12 +66,14 @@ internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatIn
 internal fun createFieldMap(sertifikatData: SertifikatData): Map<String, Any> {
     return mapOf(
         Pair("id", sertifikatData.uuid),
+        Pair("mottakId", sertifikatData.uuid)
     )
 }
 
 internal fun createFieldMap(uuid: String): Map<String, Any> {
     return mapOf(
         Pair("id", uuid),
+        Pair("mottakId", uuid)
     )
 }
 
