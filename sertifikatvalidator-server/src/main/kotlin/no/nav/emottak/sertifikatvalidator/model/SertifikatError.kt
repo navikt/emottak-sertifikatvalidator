@@ -29,12 +29,25 @@ class SertifikatError : RuntimeException {
 
     constructor(statusCode: HttpStatus,
                 message: String,
+                sertifikatData: SertifikatData,
                 sertifikatInfo: SertifikatInfo
     ): super(message) {
         this.statusCode = statusCode
         this.sertifikatInfo = sertifikatInfo
-        this.sertifikatData = null
+        this.sertifikatData = sertifikatData
         this.logStackTrace = true
+    }
+
+    constructor(statusCode: HttpStatus,
+                message: String,
+                sertifikatData: SertifikatData,
+                sertifikatInfo: SertifikatInfo,
+                logStackTrace: Boolean
+    ): super(message) {
+        this.statusCode = statusCode
+        this.sertifikatInfo = sertifikatInfo
+        this.sertifikatData = sertifikatData
+        this.logStackTrace = logStackTrace
     }
 
     constructor(statusCode: HttpStatus,
@@ -54,6 +67,17 @@ class SertifikatError : RuntimeException {
         this.statusCode = statusCode
         this.sertifikatInfo = null
         this.sertifikatData = null
+        this.logStackTrace = true
+    }
+
+    constructor(statusCode: HttpStatus,
+                message: String,
+                sertifikatData: SertifikatData,
+                sertifikatInfo: SertifikatInfo,
+                exception: Exception): super(message, exception) {
+        this.statusCode = statusCode
+        this.sertifikatInfo = sertifikatInfo
+        this.sertifikatData = sertifikatData
         this.logStackTrace = true
     }
 

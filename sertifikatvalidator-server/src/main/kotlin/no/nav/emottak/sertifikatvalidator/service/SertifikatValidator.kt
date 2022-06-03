@@ -5,8 +5,6 @@ import no.nav.emottak.sertifikatvalidator.ALL_REVOCATION_CHECKS_DISABLED
 import no.nav.emottak.sertifikatvalidator.CERTIFICATE_ISSUER_UNKNOWN
 import no.nav.emottak.sertifikatvalidator.OCSP_VERIFICATION_UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG
-import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_ENDA
-import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_IKKE_GYLDIG_LENGER
 import no.nav.emottak.sertifikatvalidator.SERTIFIKAT_SELF_SIGNED
 import no.nav.emottak.sertifikatvalidator.UKJENT_FEIL
 import no.nav.emottak.sertifikatvalidator.log
@@ -21,7 +19,6 @@ import no.nav.emottak.sertifikatvalidator.util.getOrganizationNumber
 import no.nav.emottak.sertifikatvalidator.util.getSEIDVersion
 import no.nav.emottak.sertifikatvalidator.util.isSelfSigned
 import no.nav.emottak.sertifikatvalidator.util.isVirksomhetssertifikat
-import no.nav.emottak.sertifikatvalidator.util.sertifikatIkkeGyldigEnda
 import no.nav.emottak.sertifikatvalidator.util.sertifikatOCSPValideringFeilet
 import no.nav.emottak.sertifikatvalidator.util.sertifikatOK
 import no.nav.emottak.sertifikatvalidator.util.sertifikatRevokert
@@ -55,23 +52,16 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     internal fun validateCertificate(sertifikatData: SertifikatData): SertifikatInfo {
         log.info(Markers.appendEntries(createFieldMap(sertifikatData)), "UUID ${sertifikatData.uuid} Serienummer ${sertifikatData.sertifikat.serialNumber}: sertifikatvalidering startet")
         log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), sertifikatData.sertifikat.toString())
-        try {
-            sjekkOmSertifikatErSelvsignert(sertifikatData)
+        sjekkOmSertifikatErSelvsignert(sertifikatData)
 
-            val certificateValidNow = certificateValidAtTime(sertifikatData, Instant.now())
-            val certificateValidAtGivenTime = certificateValidAtTime(sertifikatData, sertifikatData.gyldighetsDato)
-            return if (!certificateValidNow && !certificateValidAtGivenTime) {
-                throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatUtloept(sertifikatData), false)
-            } else if (!certificateValidNow) {
-                checkLegacyCertificate(sertifikatData)
-            } else {
-                checkCurrentCertificate(sertifikatData)
-            }
-
-        } catch (e: CertificateExpiredException) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_LENGER, sertifikatUtloept(sertifikatData), e)
-        } catch (e: CertificateNotYetValidException) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG_ENDA, sertifikatIkkeGyldigEnda(sertifikatData), e)
+        val certificateValidNow = certificateValidAtTime(sertifikatData, Instant.now())
+        val certificateValidAtGivenTime = certificateValidAtTime(sertifikatData, sertifikatData.gyldighetsDato)
+        return if (!certificateValidNow && !certificateValidAtGivenTime) {
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_IKKE_GYLDIG, sertifikatData, sertifikatUtloept(sertifikatData), false)
+        } else if (!certificateValidNow) {
+            checkLegacyCertificate(sertifikatData)
+        } else {
+            checkCurrentCertificate(sertifikatData)
         }
     }
 
@@ -107,7 +97,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
         try {
             builder.build(pkixParams) as PKIXCertPathBuilderResult
         } catch (e: CertPathBuilderException) {
-            throw SertifikatError(HttpStatus.BAD_REQUEST, "id=${sertifikatData.uuid} $CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatUkjentSertifikatUtsteder(sertifikatData), e)
+            throw SertifikatError(HttpStatus.BAD_REQUEST, "$CERTIFICATE_ISSUER_UNKNOWN $issuer", sertifikatData, sertifikatUkjentSertifikatUtsteder(sertifikatData), e)
         }
     }
 
@@ -125,7 +115,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         if (!sjekkCRL && !sjekkOCSP) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatUkjentFeil(sertifikatData))
+            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatData, sertifikatUkjentFeil(sertifikatData))
         }
         sjekkSertifikatMotTrustedCa(sertifikatData)
         return if (isVirksomhetssertifikat(sertifikatData.sertifikat)) {
@@ -137,7 +127,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkOmSertifikatErSelvsignert(sertifikatData: SertifikatData) {
         if (isSelfSigned(sertifikatData.sertifikat)) {
-            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatSelvsignert(sertifikatData), false)
+            throw SertifikatError(HttpStatus.UNPROCESSABLE_ENTITY, SERTIFIKAT_SELF_SIGNED, sertifikatData, sertifikatSelvsignert(sertifikatData), false)
         }
     }
 
@@ -197,7 +187,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 sjekkOCSP(sertifikatData)
         } catch (e: Exception) {
             log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "Sjekk av CRL feilet, sjekker OCSP", e)
-            if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatUkjentFeil(sertifikatData), e)
+            if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatData, sertifikatUkjentFeil(sertifikatData), e)
         }
     }
 
@@ -218,7 +208,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
                 }
                 else {
                     log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "OCSP sjekk feilet, men skipper backup CRL-sjekk fordi sjekkCRL = $sjekkCRL")
-                    throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatOCSPValideringFeilet(sertifikatData))
+                    throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, OCSP_VERIFICATION_UKJENT_FEIL, sertifikatData, sertifikatOCSPValideringFeilet(sertifikatData))
                 }
             }
         } else {
