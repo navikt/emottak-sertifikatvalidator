@@ -38,7 +38,7 @@ open class SertifikatValidator(): MicroserviceClient() {
                 .addHeader("Authorization", "Bearer ${getAccessToken()}")
                 .post(requestBody)
                 .build()
-            return postRequestToService(url, request, SertifikatInfo::class.java, messageId)
+            return postRequestToService(url, request, SertifikatInfo::class.java, 0, messageId)
         } catch (e: Exception) {
             log.error("UUID $messageId feilet: ${e.localizedMessage}")
             log.debug(e.localizedMessage, e)

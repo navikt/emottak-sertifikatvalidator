@@ -33,7 +33,9 @@ abstract class MicroserviceClient {
     private val clientVersion: String? = javaClass.`package`.implementationVersion
     private val objectMapper = jacksonObjectMapper()
     private var httpClient = OkHttpClient.Builder().build()
-    private val accessTokenHolder = AccessTokenHolder();
+    private val accessTokenHolder = AccessTokenHolder()
+    var retryDelay = 3000L
+    var retries = 3
 
     protected fun getAccessToken(): String {
         return accessTokenHolder.getToken().value
@@ -72,31 +74,36 @@ abstract class MicroserviceClient {
         url: String,
         request: Request,
         responseClass: Class<T>,
-        uuid: String
+        attempt: Int,
+        messageId: String
     ): T {
         try {
-            log.info("UUID $uuid validerer sertifikat...")
-            log.debug("Validerer sertifikat mot $url")
+            log.debug("Validerer sertifikat mot $url mottakId=$messageId")
             val response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
-                log.info("UUID $uuid sertifikat OK")
-            } else if (response.code == 400) {
-                log.warn("UUID $uuid Sertifikatvalidering svarte med BadRequest(400), sjekk input")
-            } else if (response.code == 401) {
-                log.warn("UUID $uuid Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
-                throw RuntimeException("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token")
+                log.info("Sertifikat OK mottakId=$messageId")
+            } else if (response.code == 400 || response.code == 422) {
+                log.warn("Sertifikatvalidering svarte med klienterror statusCode=${response.code}), sjekk input mottakId=$messageId")
             } else {
-                log.warn("UUID $uuid Sertifikat ikke OK, feilkode ${response.code}")
-                log.debug("Feilkode ${response.code} fra $url")
+                log.warn("${response.code} feil ved kall til $url mottakId=$messageId")
+                if (attempt < retries) {
+                    Thread.sleep(retryDelay)
+                    log.warn("Tidligere request feilet, starter forsøk $attempt mottakId=$messageId statusCode=${response.code}")
+                    return postRequestToService(url, request, responseClass, attempt+1, messageId)
+                }
+                else {
+                    log.warn("Request feilet etter $retries forsøk mottakId=$messageId statusCode=${response.code}")
+                    throw RuntimeException("Autentisering feilet mot sertifikatvalidering, sannsynligvis feil med access token mottakId=$messageId")
+                }
             }
             return objectMapper.readValue(response.body?.string(), responseClass)
         } catch (e: MismatchedInputException) {
-            log.warn("UUID $uuid Respons fra sertifikatvalidering er ikke gyldig: ${e.localizedMessage}")
-            log.debug("Respons fra sertifikatvalidering ($url) er ikke gyldig", e)
+            log.warn("Respons fra sertifikatvalidering er ikke gyldig: ${e.localizedMessage} mottakId=$messageId")
+            log.debug("Respons fra sertifikatvalidering ($url) er ikke gyldig mottakId=$messageId", e)
             throw e
         } catch (e: Exception) {
-            log.warn("UUID $uuid Ukjent feil fra sertifikatvalidering: ${e.localizedMessage}")
-            log.debug("Feil ved kall til $url", e)
+            log.warn("Ukjent feil fra sertifikatvalidering: ${e.localizedMessage} mottakId=$messageId")
+            log.debug("Feil ved kall til $url mottakId=$messageId", e)
             throw e
         }
     }
@@ -106,16 +113,20 @@ internal val log: Logger = LoggerFactory.getLogger(MicroserviceClient::class.jav
 
 internal val serviceUrl = run {
     if (isProduction) {
+        log.debug("Production environment, using $SERVICE_URL_PROD")
         SERVICE_URL_PROD
     } else {
+        log.debug("Development environment, using $SERVICE_URL_DEV")
         SERVICE_URL_DEV
     }
 }
 
 private val cluster = run {
     if (isProduction) {
+        log.debug("Production environment, using $BACKEND_CLUSTER_PROD")
         BACKEND_CLUSTER_PROD
     } else {
+        log.debug("Development environment, using $BACKEND_CLUSTER_DEV")
         BACKEND_CLUSTER_DEV
     }
 }
