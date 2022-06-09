@@ -56,9 +56,8 @@ internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatIn
         Pair("mottakId", uuid),
         Pair("statusCode", httpStatus.value()),
         Pair("status", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
-        Pair("sertifikatStatus", sertifikatInfo?.status ?: SertifikatStatus.UKJENT),
         Pair("sertifikatSeid", sertifikatInfo?.seid ?: SEIDVersion.UKJENT),
-        Pair("sertifikatUtsteder", sertifikatInfo?.utsteder ?: "UKJENT"),
+        Pair("issuer", sertifikatInfo?.utsteder ?: "UKJENT"),
         Pair("sertifikatType", sertifikatInfo?.type ?: "UKJENT")
     )
 }
