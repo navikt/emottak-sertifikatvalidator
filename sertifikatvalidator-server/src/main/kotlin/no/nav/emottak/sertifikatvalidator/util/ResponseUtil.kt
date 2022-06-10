@@ -104,14 +104,13 @@ internal fun sertifikatUkjentFeil(sertifikatData: SertifikatData) =
 internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String) =
     createSertifikatInfoFromCertificate(sertifikatData, status, beskrivelse, null)
 
-internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String, ssn: String?) =
-        if (getSertifikatType(sertifikatData.sertifikat) == SertifikatType.VIRKSOMHET) {
-            log.info(appendEntries(createFieldMap(sertifikatData)), "sertifikatvalidering $status")
-            createVirksomhetssertifikatInfo(sertifikatData, status, beskrivelse)
-        } else {
-            log.info(appendEntries(createFieldMap(sertifikatData)), "sertifikatvalidering $status")
-            createPersonSertifikatInfo(sertifikatData, status, beskrivelse, ssn)
-        }
+internal fun createSertifikatInfoFromCertificate(sertifikatData: SertifikatData, status: SertifikatStatus, beskrivelse: String, ssn: String?): SertifikatInfo {
+    log.info(appendEntries(createFieldMap(sertifikatData)), "Sertifikatvalidering $status")
+    return when (getSertifikatType(sertifikatData.sertifikat)) {
+        SertifikatType.PERSONLIG -> createPersonSertifikatInfo(sertifikatData, status, beskrivelse, ssn)
+        SertifikatType.VIRKSOMHET -> createVirksomhetssertifikatInfo(sertifikatData, status, beskrivelse)
+    }
+}
 
 private fun createPersonSertifikatInfo(
     sertifikatData: SertifikatData,
