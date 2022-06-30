@@ -47,6 +47,9 @@ management:
     readinessState:
       enabled: true
 
+ssn:
+  disable: true
+
 ekstern:
   caList:
       # Buypass prod

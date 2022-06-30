@@ -41,6 +41,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
@@ -52,6 +53,8 @@ import java.security.cert.X509Certificate
 @Service
 class OCSPChecker(val webClient: RestTemplate) {
 
+    @Value("\${ssn.disable}")
+    private var disableSSN: Boolean = false
     @Autowired
     internal lateinit var certificateAuthorities: CertificateAuthorities
     private val accessIdentifierOCSP = ASN1ObjectIdentifier("1.3.6.1.5.5.7.48.1")
@@ -106,7 +109,10 @@ class OCSPChecker(val webClient: RestTemplate) {
         if ("" == ssn) {
             ssn = getSsn(bresp)
         }
-
+        if (disableSSN) {
+            log.debug("ssn disabled, masking value")
+            ssn = ssn.replaceRange(0, ssn.lastIndex-1, "*")
+        }
         return createSertifikatInfoFromOCSPResponse(certificate, sr, ssn)
     }
 
