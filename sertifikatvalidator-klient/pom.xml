@@ -14,10 +14,10 @@
     <artifactId>sertifikatvalidator-klient</artifactId>
 
     <properties>
-        <kotlin.version>1.6.21</kotlin.version>
+        <kotlin.version>1.7.0</kotlin.version>
         <jackson-module-kotlin.version>2.13.3</jackson-module-kotlin.version>
         <jackson-databind.version>2.13.3</jackson-databind.version>
-        <okhttp.version>4.9.3</okhttp.version>
+        <okhttp.version>4.10.0</okhttp.version>
 
         <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
