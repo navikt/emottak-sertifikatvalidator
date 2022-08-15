@@ -52,11 +52,12 @@ class SecurityConfiguration {
                 "/internal/status/server/klient")
             .permitAll()
             .anyRequest()
-            .fullyAuthenticated()
-            .and()
-            .oauth2ResourceServer()
-            .jwt()
-            .decoder(jwtDecoder())
+            .permitAll()
+//            .fullyAuthenticated()
+//            .and()
+//            .oauth2ResourceServer()
+//            .jwt()
+//            .decoder(jwtDecoder())
         return http.build()
     }
 
