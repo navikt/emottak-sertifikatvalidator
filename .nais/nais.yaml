@@ -66,3 +66,5 @@ spec:
       #value: /var/run/secrets/nais.io/vault/keystore_pwd
     - name: SIGNER_SUBJECT_DN
       value: {{signer.dn}}
+    - name: SPRING_PROFILES_ACTIVE
+      value: {{env.profile}}
