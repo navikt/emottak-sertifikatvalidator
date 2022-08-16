@@ -2,3 +2,6 @@ ingresses:
 - "https://emottak-sertifikatvalidator.dev.intern.nav.no"
 signer:
   dn: "SERIALNUMBER=889640782,CN=ARBEIDS- OG VELFERDSETATEN,O=ARBEIDS- OG VELFERDSETATEN,C=NO"
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: dev
