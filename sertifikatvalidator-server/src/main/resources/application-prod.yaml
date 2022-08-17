@@ -1,11 +1,6 @@
 ekstern:
   caList:
     # Buypass prod
-    - name: "Buypass Class 2 CA 2"
-      dn: "CN=Buypass Class 2 CA 2,O=Buypass AS-983163327,C=NO"
-      crlUrl: "http://crl.buypass.no/crl/BPClass2CA2.crl"
-      ocspUrl: ""
-      ocspSignerAlias: "nav_prod_nonrep"
     - name: "Buypass Class 3 CA 3"
       dn: "CN=Buypass Class 3 CA 3,O=Buypass AS-983163327,C=NO"
       crlUrl: "http://crl.buypass.no/crl/BPClass3CA3.crl"
