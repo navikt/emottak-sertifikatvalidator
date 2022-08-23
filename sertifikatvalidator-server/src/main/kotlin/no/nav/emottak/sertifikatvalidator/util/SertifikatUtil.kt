@@ -34,7 +34,8 @@ private val policyIdVirksomhet = listOf(
     "[2.16.578.1.26.1.0.3.2]", //buypass.test.policy.id.agency
     "[2.16.578.1.26.1.3.2]", //buypass.prod.policy.id.agency
     "[2.16.578.1.29.13.1.1.0]", //commfides.prod.policy.id.agency
-    "[2.16.578.1.29.913.1.1.0]" //commfides.test.policy.id.agency
+    "[2.16.578.1.29.913.1.1.0]", //commfides.test.policy.id.agency
+    "[2.16.578.1.29.13.200.1.0]" //commfides.g3.prod.policy.id.agency
 )
 
 private val DN_TYPES_IN_SEARCHORDER = arrayOf("ou", "serialnumber", "OID.2.5.4.97", "OID.2.5.4.5", "o")

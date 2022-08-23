@@ -133,6 +133,7 @@ private val cluster = run {
 
 internal val isProduction = run {
     val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
+    log.debug("Environment: $environment (isProduction = ${environment.startsWith("prod", ignoreCase = true)})")
     environment.startsWith("prod", ignoreCase = true)
 }
 
