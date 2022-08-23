@@ -112,7 +112,7 @@ abstract class MicroserviceClient {
 internal val log: Logger = LoggerFactory.getLogger(MicroserviceClient::class.java)
 
 internal val serviceUrl = run {
-    if (isProduction) {
+    if (isProduction()) {
         log.debug("Production environment, using $SERVICE_URL_PROD")
         SERVICE_URL_PROD
     } else {
@@ -122,7 +122,7 @@ internal val serviceUrl = run {
 }
 
 private val cluster = run {
-    if (isProduction) {
+    if (isProduction()) {
         log.debug("Production environment, using $BACKEND_CLUSTER_PROD")
         BACKEND_CLUSTER_PROD
     } else {
@@ -131,10 +131,10 @@ private val cluster = run {
     }
 }
 
-internal val isProduction = run {
+internal fun isProduction(): Boolean {
     val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
     log.debug("Environment: $environment (isProduction = ${environment.startsWith("prod", ignoreCase = true)})")
-    environment.startsWith("prod", ignoreCase = true)
+    return environment.startsWith("prod", ignoreCase = true)
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
