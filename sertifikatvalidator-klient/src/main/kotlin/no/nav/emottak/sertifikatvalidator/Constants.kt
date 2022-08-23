@@ -28,7 +28,7 @@ const val REVOKASJON_STATUS_MANGLER = "Revokasjonstatus mangler, kan være revok
 const val UKJENT_FEIL = "Ukjent feil"
 
 const val SERVICE_URL_PROD =
-    "https://emottak-sertifikatvalidator.intern.nav.no/api//valider/sertifikat"
+    "https://emottak-sertifikatvalidator.intern.nav.no/api/valider/sertifikat"
 const val SERVICE_URL_DEV =
     "https://emottak-sertifikatvalidator.dev.intern.nav.no/api/valider/sertifikat"
 
