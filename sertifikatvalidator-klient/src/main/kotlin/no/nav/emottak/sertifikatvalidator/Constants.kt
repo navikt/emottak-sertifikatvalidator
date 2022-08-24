@@ -31,6 +31,8 @@ const val SERVICE_URL_PROD =
     "https://emottak-sertifikatvalidator.intern.nav.no/api/valider/sertifikat"
 const val SERVICE_URL_DEV =
     "https://emottak-sertifikatvalidator.dev.intern.nav.no/api/valider/sertifikat"
+const val SERVICE_URL_LOCAL =
+    "http://emottak-sertifikatvalidator.team-emottak.svc.nais.local/api/valider/sertifikat"
 
 //NB Må endres dersom tjenesten skal kjøre i GCP
 const val BACKEND_CLUSTER_DEV = "dev-fss"
