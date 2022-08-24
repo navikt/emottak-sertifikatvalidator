@@ -10,7 +10,7 @@ env:
 jobs:
   "build":
     name: "build"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-22.04"
     steps:
     - uses: "actions/checkout@v3"
     - uses: "actions/cache@v3"
@@ -40,7 +40,7 @@ jobs:
   "deployAppToDev":
     name: "Deploy to dev"
     needs: "build"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-22.04"
     steps:
     - uses: "actions/checkout@v3"
     - name: "Deploy secret to DEV"
@@ -60,7 +60,7 @@ jobs:
   "deployAppToProd":
     name: "Deploy to prod"
     needs: "deployAppToDev"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-22.04"
     steps:
     - uses: "actions/checkout@v3"
     - name: "Deploy secret to PROD"
@@ -80,7 +80,7 @@ jobs:
   "deployAlertsToDev":
     name: "Deploy alerts to dev"
     needs: "build"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-22.04"
     steps:
       - uses: "actions/checkout@v3"
       - name: "Deploy alerts to DEV"
@@ -93,7 +93,7 @@ jobs:
   "deployAlertsToProd":
     name: "Deploy alerts to prod"
     needs: "deployAlertsToDev"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-22.04"
     steps:
     - uses: "actions/checkout@v3"
     - name: "Deploy alerts to PROD"
