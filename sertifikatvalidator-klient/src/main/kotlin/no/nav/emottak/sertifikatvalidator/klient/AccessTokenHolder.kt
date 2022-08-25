@@ -23,7 +23,7 @@ internal class AccessTokenHolder {
     private val clientSecret = getEnvVar("AZURE_APP_CLIENT_SECRET")
     private val tenant = getEnvVar("AZURE_APP_TENANT_ID")
     private val tokenEndpoint = "https://login.microsoftonline.com/$tenant/oauth2/v2.0/token"
-    private val scope = "api://$cluster.$BACKEND_NAMESPACE.$BACKEND_APPLICATION_NAME/.default"
+    private val scope = "api://$backendCluster.$BACKEND_NAMESPACE.$BACKEND_APPLICATION_NAME/.default"
     private var accessToken: AccessToken? = null
 
     fun getToken(): AccessToken {

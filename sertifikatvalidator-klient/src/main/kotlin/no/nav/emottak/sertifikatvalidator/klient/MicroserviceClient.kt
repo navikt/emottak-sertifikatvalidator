@@ -99,7 +99,7 @@ internal val log: Logger = LoggerFactory.getLogger(MicroserviceClient::class.jav
 
 internal val serviceUrl = run {
     if (isSameClusterAndNamespace()) {
-        log.debug("Running client in same cluster and namespace as server ($cluster, $BACKEND_NAMESPACE), using $SERVICE_URL_LOCAL")
+        log.debug("Running client in same cluster and namespace as server ($backendCluster, $BACKEND_NAMESPACE), using $SERVICE_URL_LOCAL")
         SERVICE_URL_LOCAL
     }
     else if (isProduction()) {
@@ -111,7 +111,7 @@ internal val serviceUrl = run {
     }
 }
 
-internal val cluster = run {
+internal val backendCluster = run {
     if (isProduction()) {
         log.debug("Production environment, using $BACKEND_CLUSTER_PROD")
         BACKEND_CLUSTER_PROD
@@ -130,9 +130,10 @@ internal fun isProduction(): Boolean {
 internal fun isSameClusterAndNamespace(): Boolean {
     val environment = getEnvVar("NAIS_CLUSTER_NAME", "dev")
     val namespace = getEnvVar("NAIS_NAMESPACE", "")
-    val isSameClusterAndNamespace = environment.equals(cluster, ignoreCase = true) && namespace.equals(BACKEND_NAMESPACE, ignoreCase = true)
-    log.debug("Environment: $environment Namespace: $namespace (isSameClusterAndNamespace = $isSameClusterAndNamespace")
-    return isSameClusterAndNamespace
+    val isSameCluster = environment.equals(backendCluster, ignoreCase = true)
+    val isSameNamespace = namespace.equals(BACKEND_NAMESPACE, ignoreCase = true)
+    log.debug("Environment: $environment ($backendCluster) Namespace: $namespace ($BACKEND_NAMESPACE) (isSameCluster = $isSameCluster, isSameNamespace = $isSameNamespace)")
+    return isSameCluster && isSameNamespace
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
