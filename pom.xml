@@ -28,7 +28,7 @@
 		<jackson-databind.version>2.13.3</jackson-databind.version>
 		<okhttp.version>4.10.0</okhttp.version>
 		<logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-		<logback-classic.version>1.2.11</logback-classic.version>
+		<logback-classic.version>1.4.0</logback-classic.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
