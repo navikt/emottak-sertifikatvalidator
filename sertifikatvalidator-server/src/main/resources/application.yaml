@@ -4,10 +4,6 @@ springdoc:
   swagger-ui:
     path: '/internal/swagger'
 
-logging:
-  level:
-    no.nav.emottak.sertifikatvalidator: DEBUG
-
 spring:
   profiles:
     default: dev

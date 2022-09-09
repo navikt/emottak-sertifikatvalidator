@@ -1,3 +1,7 @@
+logging:
+  level:
+    no.nav.emottak.sertifikatvalidator: INFO
+
 ekstern:
   caList:
     # Buypass prod
