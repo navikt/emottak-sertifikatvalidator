@@ -7,6 +7,7 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -21,10 +22,14 @@ open class SertifikatValidator(): MicroserviceClient() {
     }
 
     fun valider(sertifikat: ByteArray, messageId: String): SertifikatInfo {
-        return valider(sertifikat, messageId, Instant.now())
+        return valider(sertifikat, messageId, false)
     }
 
-    fun valider(sertifikat: ByteArray, messageId: String, gyldighetsdato: Instant): SertifikatInfo {
+    fun valider(sertifikat: ByteArray, messageId: String, inkluderFnr: Boolean): SertifikatInfo {
+        return valider(sertifikat, messageId, Instant.now(), inkluderFnr)
+    }
+
+    fun valider(sertifikat: ByteArray, messageId: String, gyldighetsdato: Instant, inkluderFnr: Boolean): SertifikatInfo {
         val url = when (buildMode) {
             true -> "http://localhost:8080/api/valider/sertifikat"
             false -> serviceUrl
@@ -32,7 +37,7 @@ open class SertifikatValidator(): MicroserviceClient() {
         try {
             val requestBody = createMultipartBodyRequest(sertifikat, messageId)
             val request = Request.Builder()
-                .url("$url?gyldighetsdato=${formatInstant(gyldighetsdato)}")
+                .url("$url?gyldighetsdato=${formatInstant(gyldighetsdato)}&inkluderFnr=$inkluderFnr")
                 .addHeader("Content-Type", "multipart/form-data")
                 .addHeader("Accept", "application/json")
                 .addHeader("Authorization", "Bearer ${getAccessToken()}")
@@ -51,14 +56,14 @@ open class SertifikatValidator(): MicroserviceClient() {
         messageId: String,
     ): MultipartBody {
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
-        requestBody.addFormDataPart("certificate", messageId, sertifikat.toRequestBody())
+        requestBody.addFormDataPart("sertifikat", messageId, sertifikat.toRequestBody())
         return requestBody.build()
     }
 
     override fun checkServerCompatibility(): ServerStatus {
         try {
-            val testFile = this::class.java.classLoader.getResourceAsStream("buypass_valid.cer").readAllBytes()
-            val sertifikatInfo = valider(testFile)
+            val testFile = this::class.java.classLoader.getResourceAsStream("buypass_valid.cer").readBytes()
+            val sertifikatInfo = valider(testFile, "COMPATIBILITY_CHECK_${LocalDateTime.now()}")
             return createServerStatusResponse(sertifikatInfo.status == SertifikatStatus.OK)
         } catch (e: Exception) {
             return createServerStatusErrorResponse(e)

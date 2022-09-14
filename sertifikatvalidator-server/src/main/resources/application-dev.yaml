@@ -1,3 +1,6 @@
+ssn:
+  disable: false
+
 logging:
   level:
     no.nav.emottak.sertifikatvalidator: INFO

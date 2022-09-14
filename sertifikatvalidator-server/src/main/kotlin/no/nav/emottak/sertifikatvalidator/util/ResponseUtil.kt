@@ -33,9 +33,9 @@ import java.util.Date
 import java.util.Locale
 
 
-internal fun createResponseEntity(sertifikatInfo: SertifikatInfo, uuid: String): ResponseEntity<SertifikatInfo> {
+internal fun createResponseEntity(sertifikatInfo: SertifikatInfo, uuid: String, inkluderFnr: Boolean): ResponseEntity<SertifikatInfo> {
     return when(sertifikatInfo.status) {
-        SertifikatStatus.OK -> createResponseEntity(HttpStatus.OK, sertifikatInfo, uuid)
+        SertifikatStatus.OK -> createResponseEntity(HttpStatus.OK, sertifikatInfo, uuid, inkluderFnr)
         SertifikatStatus.FEIL_MED_INPUT -> createResponseEntity(HttpStatus.BAD_REQUEST, sertifikatInfo, uuid)
         SertifikatStatus.UTGAATT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo, uuid)
         SertifikatStatus.REVOKERT -> createResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, sertifikatInfo, uuid)
@@ -45,9 +45,14 @@ internal fun createResponseEntity(sertifikatInfo: SertifikatInfo, uuid: String):
     }
 }
 
-private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo, uuid: String): ResponseEntity<SertifikatInfo> {
+private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo, uuid: String, inkluderFnr: Boolean = false): ResponseEntity<SertifikatInfo> {
     log.info(appendEntries(createFieldMap(httpStatus, sertifikatInfo, uuid)), "Sertifikatvalidering response returnert")
-    return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(sertifikatInfo)
+    val filtrertSertifikatInfo = if (inkluderFnr) {
+        sertifikatInfo
+    } else {
+        sertifikatInfo.copy(fnr = "UNAUTHORIZED")
+    }
+    return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(filtrertSertifikatInfo)
 }
 
 internal fun createFieldMap(httpStatus: HttpStatus, sertifikatInfo: SertifikatInfo?, uuid: String): Map<String, Any> {
