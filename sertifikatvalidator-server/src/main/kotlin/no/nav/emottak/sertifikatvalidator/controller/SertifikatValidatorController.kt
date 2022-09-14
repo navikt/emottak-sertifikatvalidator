@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -37,9 +37,9 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
                           @RequestParam("gyldighetsdato") @DateTimeFormat(pattern ="yyyy-MM-dd") date: Date?,
                           @RequestParam("fnr") inkluderFnr: Boolean?
     ): ResponseEntity<SertifikatInfo> {
-        val authentication = SecurityContextHolder.getContext().authentication as OAuth2AuthenticatedPrincipal
+        val authentication = SecurityContextHolder.getContext().authentication as JwtAuthenticationToken
         //val currentPrincipalName = authentication.principal as
-        log.info("Auth name: ${authentication.name} authorities: ${authentication.authorities} type: ${authentication.javaClass.name}")
+        log.info("Auth name: ${authentication.name} authorities: ${authentication.authorities} type: ${authentication.javaClass.name} principal: ${authentication.principal.javaClass.name}")
         val uuid = sertifikat.originalFilename ?: "FILENAME_MISSING_GENERATED_THIS_${UUID.randomUUID()}"
         val x509Certificate = createX509Certificate(sertifikat.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
