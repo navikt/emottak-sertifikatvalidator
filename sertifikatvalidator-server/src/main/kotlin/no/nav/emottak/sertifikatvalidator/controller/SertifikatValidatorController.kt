@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -35,9 +35,11 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
     @PostMapping("/valider/sertifikat", consumes = [ MediaType.MULTIPART_FORM_DATA_VALUE ], produces = [ MediaType.APPLICATION_JSON_VALUE ])
     fun validerSertifikat(@RequestBody sertifikat: MultipartFile,
                           @RequestParam("gyldighetsdato") @DateTimeFormat(pattern ="yyyy-MM-dd") date: Date?,
-                          @RequestParam("fnr") inkluderFnr: Boolean?,
-                          @AuthenticationPrincipal principal: OAuth2AuthenticatedPrincipal
+                          @RequestParam("fnr") inkluderFnr: Boolean?
     ): ResponseEntity<SertifikatInfo> {
+        val authentication = SecurityContextHolder.getContext().authentication as OAuth2AuthenticatedPrincipal
+        //val currentPrincipalName = authentication.principal as
+        log.info("Auth name: ${authentication.name} authorities: ${authentication.authorities} type: ${authentication.javaClass.name}")
         val uuid = sertifikat.originalFilename ?: "FILENAME_MISSING_GENERATED_THIS_${UUID.randomUUID()}"
         val x509Certificate = createX509Certificate(sertifikat.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
@@ -46,9 +48,9 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         val fnr = if (disableSSN) {
             log.debug("ssn disabled, masking value")
             false
-        } else if (principal.authorities.first { it.authority == "SCOPE_$fnrTillattScope" } != null) {
-            log.debug("Klient ${principal.name} har scope $fnrTillattScope")
-            inkluderFnr ?: false
+//        } else if (principal?.authorities?.first { it.authority == "SCOPE_$fnrTillattScope" } != null) {
+//            log.debug("Klient ${principal.name} har scope $fnrTillattScope")
+//            inkluderFnr ?: false
         } else {
             false
         }
