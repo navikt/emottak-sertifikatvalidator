@@ -40,7 +40,7 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
     ): ResponseEntity<SertifikatInfo> {
         val authentication = SecurityContextHolder.getContext().authentication as JwtAuthenticationToken
         val currentPrincipal = authentication.principal as Jwt
-        log.info("claims: ${currentPrincipal.claims} type: ${authentication.javaClass.name} principal: ${authentication.principal.javaClass.name}")
+        //log.info("claims: ${currentPrincipal.claims} type: ${authentication.javaClass.name} principal: ${authentication.principal.javaClass.name}")
         val uuid = sertifikat.originalFilename ?: "FILENAME_MISSING_GENERATED_THIS_${UUID.randomUUID()}"
         val x509Certificate = createX509Certificate(sertifikat.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
