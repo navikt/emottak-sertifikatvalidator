@@ -38,9 +38,6 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
                           @RequestParam("gyldighetsdato") @DateTimeFormat(pattern ="yyyy-MM-dd") date: Date?,
                           @RequestParam("fnr") inkluderFnr: Boolean?
     ): ResponseEntity<SertifikatInfo> {
-        val authentication = SecurityContextHolder.getContext().authentication as JwtAuthenticationToken
-        val currentPrincipal = authentication.principal as Jwt
-        log.info("claims: ${currentPrincipal.claims} type: ${authentication.javaClass.name} principal: ${authentication.principal.javaClass.name}")
         val uuid = sertifikat.originalFilename ?: "FILENAME_MISSING_GENERATED_THIS_${UUID.randomUUID()}"
         val x509Certificate = createX509Certificate(sertifikat.inputStream)
         val validityDate = date?.toInstant() ?: Instant.now()
@@ -49,13 +46,21 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         val fnr = if (disableSSN) {
             log.debug("ssn disabled, masking value")
             false
-//        } else if (principal?.authorities?.first { it.authority == "SCOPE_$fnrTillattScope" } != null) {
-//            log.debug("Klient ${principal.name} har scope $fnrTillattScope")
-//            inkluderFnr ?: false
+        } else if (harFnrTillatt()) {
+            log.debug("Klient har rolle $fnrTillattScope")
+            inkluderFnr ?: false
         } else {
             false
         }
         return createResponseEntity(sertifikatInfo, sertifikatData.uuid, fnr)
+    }
+
+    private fun harFnrTillatt(): Boolean {
+        return getCurrentPrincipal().getClaimAsStringList("roles").contains(fnrTillattScope)
+    }
+
+    private fun getCurrentPrincipal(): Jwt {
+        return SecurityContextHolder.getContext().authentication.principal as Jwt
     }
 
 }
