@@ -47,6 +47,8 @@ spec:
           permissions:
             scopes:
               - "custom-scope"
+            roles:
+              - "custom-role"
   filesFrom:
 #    - secret: emottak-sertifikatvalidator-secrets
 #      mountPath: /var/run/secrets
