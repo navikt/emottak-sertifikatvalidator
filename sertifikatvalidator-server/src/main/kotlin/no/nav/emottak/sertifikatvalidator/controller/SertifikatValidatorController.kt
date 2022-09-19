@@ -56,7 +56,10 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
     }
 
     private fun harFnrTillatt(): Boolean {
-        return getCurrentPrincipal().getClaimAsStringList("roles").contains(fnrTillattScope)
+        val claims = getCurrentPrincipal().claims
+        val roles = claims.get("roles") as List<String>
+        log.debug("claims $claims roles $roles")
+        return roles.contains(fnrTillattScope)
     }
 
     private fun getCurrentPrincipal(): Jwt {
