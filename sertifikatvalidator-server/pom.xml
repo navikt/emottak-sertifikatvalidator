@@ -18,12 +18,22 @@
         <maven.compiler.target>16</maven.compiler.target>
         <maven.deploy.skip>true</maven.deploy.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <java.version>16</java.version>
+        <kotlin.version>1.7.10</kotlin.version>
+        <jackson-module-kotlin.version>2.13.4</jackson-module-kotlin.version>
+        <jackson-databind.version>2.13.3</jackson-databind.version>
+        <okhttp.version>4.10.0</okhttp.version>
+        <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
+        <springdoc-openapi.version>1.6.11</springdoc-openapi.version>
+        <bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>no.nav.emottak</groupId>
             <artifactId>sertifikatvalidator-klient</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -37,18 +47,22 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
+            <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback-encoder.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
@@ -66,22 +80,24 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
+            <version>${jackson-module-kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.11</version>
+            <version>${springdoc-openapi.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.70</version>
+            <version>${bcpkix-jdk15on.version}</version>
         </dependency>
 
         <dependency>
@@ -102,6 +118,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
                 <configuration>
                     <args>
                         <arg>-Xjsr305=strict</arg>

@@ -2,11 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<!--    <parent>-->
-<!--        <artifactId>emottak-sertifikatvalidator</artifactId>-->
-<!--        <groupId>no.nav.emottak</groupId>-->
-<!--        <version>0.0.1-SNAPSHOT</version>-->
-<!--    </parent>-->
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.emottak</groupId>
@@ -15,11 +10,12 @@
 
     <properties>
         <kotlin.version>1.7.10</kotlin.version>
-        <jackson-module-kotlin.version>2.13.3</jackson-module-kotlin.version>
-        <jackson-databind.version>2.13.3</jackson-databind.version>
+        <jackson-module-kotlin.version>2.13.4</jackson-module-kotlin.version>
+        <jackson-databind.version>2.13.4</jackson-databind.version>
         <okhttp.version>4.10.0</okhttp.version>
-        <logback.version>1.2.11</logback.version>
-        <slf4j.version>2.0.0</slf4j.version>
+        <logback.version>1.4.1</logback.version>
+        <slf4j.version>2.0.1</slf4j.version>
+        <oauth2-oidc-sdk.version>9.43.1</oauth2-oidc-sdk.version>
 
         <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
@@ -75,7 +71,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>9.41.1</version>
+            <version>${oauth2-oidc-sdk.version}</version>
         </dependency>
     </dependencies>
 
