@@ -12,7 +12,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -55,14 +54,9 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         return createResponseEntity(sertifikatInfo, sertifikatData.uuid, fnr)
     }
 
-    private fun harFnrTillatt(): Boolean {
-        val claims = getCurrentPrincipal().claims.keys
-        val roles = getCurrentPrincipal().getClaimAsStringList("roles")
-        log.debug("List of claims: $claims roles: $roles")
-        return roles.contains(fnrTillattScope)
-    }
+    private fun harFnrTillatt(): Boolean =
+        getCurrentPrincipal().getClaimAsStringList("roles").contains(fnrTillattScope)
 
+    private fun getCurrentPrincipal(): Jwt = SecurityContextHolder.getContext().authentication.principal as Jwt
 
-    private fun getCurrentPrincipal(): Jwt =
-        SecurityContextHolder.getContext().authentication.principal as Jwt
 }
