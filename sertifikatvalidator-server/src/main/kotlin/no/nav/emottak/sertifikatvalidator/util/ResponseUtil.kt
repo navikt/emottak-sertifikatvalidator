@@ -50,7 +50,7 @@ private fun createResponseEntity(httpStatus: HttpStatus, sertifikatInfo: Sertifi
     val filtrertSertifikatInfo = if (inkluderFnr) {
         sertifikatInfo
     } else {
-        sertifikatInfo.copy(fnr = "UNAUTHORIZED")
+        sertifikatInfo.copy(fnr = "***********")
     }
     return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(filtrertSertifikatInfo)
 }
