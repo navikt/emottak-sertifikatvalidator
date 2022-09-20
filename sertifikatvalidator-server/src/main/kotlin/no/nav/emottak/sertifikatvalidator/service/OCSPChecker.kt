@@ -84,7 +84,6 @@ class OCSPChecker(val webClient: RestTemplate) {
         verifyNonce(requestNonce, basicOCSPResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce))
 
         val ocspCertificates = basicOCSPResponse.certs
-        log.debug("Certificates in response: " + ocspCertificates.size)
 
         verifyOCSPCerts(basicOCSPResponse, ocspCertificates, ocspResponderCertificate)
         val certstat = basicOCSPResponse.responses
@@ -159,7 +158,6 @@ class OCSPChecker(val webClient: RestTemplate) {
             } else {
                 val cert = certificates[0]
                 verifyProvider(cert, X500Name(ocspResponderCertificate.subjectX500Principal.name))
-                log.debug("Verifying certificate " + cert.subject.toString())
                 if (!basicOCSPResponse.isSignatureValid(contentVerifierProviderBuilder.build(cert))) {
                     log.error("OCSP response failed to verify")
                     throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, "OCSP response failed to verify")
@@ -249,7 +247,6 @@ class OCSPChecker(val webClient: RestTemplate) {
                 KeyStoreHandler.getCertificateChain(signerAlias)
             )
             log.debug("OCSP Request created")
-            log.debug("Request signed: ${request.isSigned}")
             return request
         } catch (e: Exception) {
             log.error(Markers.appendEntries(createFieldMap(sertifikatData)), "$FAILED_TO_GENERATE_REVOCATION_REQUEST")
@@ -265,7 +262,6 @@ class OCSPChecker(val webClient: RestTemplate) {
     }
 
     private fun getOcspResponderCertificate(certificateIssuer: String): X509Certificate {
-        log.debug("getOcspResponderCertificate: $certificateIssuer")
         KeyStoreHandler.trustStore.aliases().toList().forEach { alias ->
             val cert = KeyStoreHandler.trustStore.getCertificate(alias) as X509Certificate
             if (cert.subjectX500Principal.name == certificateIssuer) {
@@ -300,7 +296,6 @@ class OCSPChecker(val webClient: RestTemplate) {
 
     private fun addSsnExtension(certificate: X509Certificate, extensionsGenerator: ExtensionsGenerator) {
         if (!isVirksomhetssertifikat(certificate)) {
-            log.debug("adding SSN extension")
             extensionsGenerator.addExtension(ssnPolicyID, false, DEROctetString(byteArrayOf(0)))
         }
     }

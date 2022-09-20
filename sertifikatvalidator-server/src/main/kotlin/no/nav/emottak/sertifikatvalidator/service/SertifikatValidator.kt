@@ -75,7 +75,6 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikatMotTrustedCa(sertifikatData: SertifikatData) {
         val issuer = sertifikatData.sertifikat.issuerX500Principal.name
-        log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sjekker certificate chain")
         log.debug(Markers.appendEntries(createFieldMap(sertifikatData)), "Sertifikat utstedt av $issuer")
         val trustedRootCerts = KeyStoreHandler.getTrustedRootCerts()
         val intermediateCerts = KeyStoreHandler.getIntermediateCerts()

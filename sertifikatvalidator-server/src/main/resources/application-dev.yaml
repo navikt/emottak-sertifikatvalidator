@@ -3,7 +3,7 @@ ssn:
 
 logging:
   level:
-    no.nav.emottak.sertifikatvalidator: INFO
+    no.nav.emottak.sertifikatvalidator: DEBUG
 
 ekstern:
   caList:
