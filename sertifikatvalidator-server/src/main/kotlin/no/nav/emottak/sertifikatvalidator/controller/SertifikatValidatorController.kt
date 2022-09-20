@@ -31,7 +31,7 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
     @Value("\${ssn.disable}")
     private var disableSSN: Boolean = true
 
-    private val fnrTillattScope = "FNR_TILLATT"
+    private val fnrTillattScope = "fnr-tillatt"
 
     @PostMapping("/valider/sertifikat", consumes = [ MediaType.MULTIPART_FORM_DATA_VALUE ], produces = [ MediaType.APPLICATION_JSON_VALUE ])
     fun validerSertifikat(@RequestBody sertifikat: MultipartFile,
@@ -55,15 +55,9 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         return createResponseEntity(sertifikatInfo, sertifikatData.uuid, fnr)
     }
 
-    private fun harFnrTillatt(): Boolean {
-        val claims = getCurrentPrincipal().claims
-        val roles = claims.get("roles") as List<String>
-        log.debug("claims $claims roles $roles")
-        return roles.contains(fnrTillattScope)
-    }
+    private fun harFnrTillatt(): Boolean =
+        (getCurrentPrincipal().claims["roles"] as List<String>).contains(fnrTillattScope)
 
-    private fun getCurrentPrincipal(): Jwt {
-        return SecurityContextHolder.getContext().authentication.principal as Jwt
-    }
-
+    private fun getCurrentPrincipal(): Jwt =
+        SecurityContextHolder.getContext().authentication.principal as Jwt
 }

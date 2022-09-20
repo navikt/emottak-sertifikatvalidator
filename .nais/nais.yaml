@@ -46,7 +46,7 @@ spec:
         - application: emottak-signaturverifikator
           permissions:
             roles:
-              - "FNR_TILLATT"
+              - "fnr-tillatt"
   filesFrom:
 #    - secret: emottak-sertifikatvalidator-secrets
 #      mountPath: /var/run/secrets
