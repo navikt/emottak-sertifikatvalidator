@@ -55,8 +55,13 @@ class SertifikatValidatorController(val sertifikatValidator: SertifikatValidator
         return createResponseEntity(sertifikatInfo, sertifikatData.uuid, fnr)
     }
 
-    private fun harFnrTillatt(): Boolean =
-        (getCurrentPrincipal().claims["roles"] as List<String>).contains(fnrTillattScope)
+    private fun harFnrTillatt(): Boolean {
+        val claims = getCurrentPrincipal().claims.keys
+        val roles = getCurrentPrincipal().getClaimAsStringList("roles")
+        log.debug("List of claims: $claims roles: $roles")
+        return roles.contains(fnrTillattScope)
+    }
+
 
     private fun getCurrentPrincipal(): Jwt =
         SecurityContextHolder.getContext().authentication.principal as Jwt
