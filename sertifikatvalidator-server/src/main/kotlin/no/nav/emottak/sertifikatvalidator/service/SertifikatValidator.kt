@@ -69,7 +69,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
     }
 
     private fun checkLegacyCertificate(sertifikatData: SertifikatData): SertifikatInfo {
-        return sjekkSertifikat(sertifikatData = sertifikatData, sjekkCRL = false, sjekkOCSP = true)
+        return sjekkSertifikat(sertifikatData = sertifikatData, sjekkCRL = false, sjekkOCSP = false)
     }
 
     private fun sjekkSertifikatMotTrustedCa(sertifikatData: SertifikatData) {
