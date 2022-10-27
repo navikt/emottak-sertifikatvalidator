@@ -113,7 +113,7 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
 
     private fun sjekkSertifikat(sertifikatData: SertifikatData, sjekkCRL: Boolean, sjekkOCSP: Boolean): SertifikatInfo {
         if (!sjekkCRL && !sjekkOCSP) {
-            throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatData, sertifikatUkjentFeil(sertifikatData))
+            //TODO throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, ALL_REVOCATION_CHECKS_DISABLED, sertifikatData, sertifikatUkjentFeil(sertifikatData))
         }
         sjekkSertifikatMotTrustedCa(sertifikatData)
         return if (isVirksomhetssertifikat(sertifikatData.sertifikat)) {
@@ -182,7 +182,9 @@ class SertifikatValidator(val ocspChecker: OCSPChecker, val crlChecker: CRLCheck
             if(sjekkCRL)
                 sjekkCRL(sertifikatData, null)
             else
-                sjekkOCSP(sertifikatData)
+                sertifikatOK(sertifikatData, null)
+                //TODO
+                //sjekkOCSP(sertifikatData)
         } catch (e: Exception) {
             log.warn(Markers.appendEntries(createFieldMap(sertifikatData)), "Sjekk av CRL feilet, sjekker OCSP", e)
             if (sjekkOCSP) sjekkOCSP(sertifikatData) else throw SertifikatError(HttpStatus.INTERNAL_SERVER_ERROR, UKJENT_FEIL, sertifikatData, sertifikatUkjentFeil(sertifikatData), e)
