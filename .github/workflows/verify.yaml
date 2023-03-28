@@ -26,12 +26,3 @@ jobs:
           distribution: temurin
       - name: compile, run tests and verify
         run: mvn verify -e --no-transfer-progress
-
-      - name: Test Report
-        uses: dorny/test-reporter@v1.6.0
-        if: success() || failure()
-        with:
-          name: Java Tests
-          path: "**/target/surefire-reports/TEST-*.xml"
-          reporter: java-junit  
-          
