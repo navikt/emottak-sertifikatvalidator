@@ -23,7 +23,7 @@
         <kotlin.version>1.7.20</kotlin.version>
         <jackson-module-kotlin.version>2.13.4</jackson-module-kotlin.version>
         <jackson-databind.version>2.13.3</jackson-databind.version>
-        <okhttp.version>4.10.0</okhttp.version>
+        <okhttp.version>4.11.0</okhttp.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <springdoc-openapi.version>1.6.12</springdoc-openapi.version>
         <bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
