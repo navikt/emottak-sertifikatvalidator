@@ -15,7 +15,7 @@
         <okhttp.version>4.10.0</okhttp.version>
         <logback.version>1.4.1</logback.version>
         <slf4j.version>2.0.3</slf4j.version>
-        <oauth2-oidc-sdk.version>9.43.1</oauth2-oidc-sdk.version>
+        <oauth2-oidc-sdk.version>10.13.2</oauth2-oidc-sdk.version>
 
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
