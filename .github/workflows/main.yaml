@@ -44,14 +44,14 @@ jobs:
     steps:
     - uses: "actions/checkout@v3"
     - name: "Deploy secret to DEV"
-      uses: "nais/deploy/actions/deploy@v1"
+      uses: "nais/deploy/actions/deploy@v2"
       env:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
         "CLUSTER": "dev-fss"
         "RESOURCE": ".nais/secrets.yaml"
         "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_DEV }},truststorePass=${{ secrets.TRUSTSTORE_PASS_DEV }},keystore=${{ secrets.KEYSTORE_FILE_DEV }},keystorePass=${{ secrets.KEYSTORE_PASS_DEV }}"
     - name: "Deploy app to DEV"
-      uses: "nais/deploy/actions/deploy@v1"
+      uses: "nais/deploy/actions/deploy@v2"
       env:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
         "CLUSTER": "dev-fss"
@@ -64,14 +64,14 @@ jobs:
     steps:
     - uses: "actions/checkout@v3"
     - name: "Deploy secret to PROD"
-      uses: "nais/deploy/actions/deploy@v1"
+      uses: "nais/deploy/actions/deploy@v2"
       env:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
         "CLUSTER": "prod-fss"
         "RESOURCE": ".nais/secrets.yaml"
         "VAR": "truststore=${{ secrets.TRUSTSTORE_FILE_PROD }},truststorePass=${{ secrets.TRUSTSTORE_PASS_PROD }},keystore=${{ secrets.KEYSTORE_FILE_PROD }},keystorePass=${{ secrets.KEYSTORE_PASS_PROD }}"
     - name: "Deploy app to PROD"
-      uses: "nais/deploy/actions/deploy@v1"
+      uses: "nais/deploy/actions/deploy@v2"
       env:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
         "CLUSTER": "prod-fss"
@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: "actions/checkout@v3"
       - name: "Deploy alerts to DEV"
-        uses: "nais/deploy/actions/deploy@v1"
+        uses: "nais/deploy/actions/deploy@v2"
         env:
           "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
           "CLUSTER": "dev-fss"
@@ -97,7 +97,7 @@ jobs:
     steps:
     - uses: "actions/checkout@v3"
     - name: "Deploy alerts to PROD"
-      uses: "nais/deploy/actions/deploy@v1"
+      uses: "nais/deploy/actions/deploy@v2"
       env:
         "APIKEY": "${{ secrets.NAIS_DEPLOY_APIKEY }}"
         "CLUSTER": "prod-fss"
