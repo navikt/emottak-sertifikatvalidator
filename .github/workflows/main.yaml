@@ -12,7 +12,7 @@ jobs:
     name: "build"
     runs-on: "ubuntu-22.04"
     steps:
-    - uses: "actions/checkout@v3"
+    - uses: "actions/checkout@v4"
     - uses: "actions/cache@v3"
       with:
         "path": "~/.m2/repository"
@@ -42,7 +42,7 @@ jobs:
     needs: "build"
     runs-on: "ubuntu-22.04"
     steps:
-    - uses: "actions/checkout@v3"
+    - uses: "actions/checkout@v4"
     - name: "Deploy secret to DEV"
       uses: "nais/deploy/actions/deploy@v1"
       env:
@@ -62,7 +62,7 @@ jobs:
     needs: "deployAppToDev"
     runs-on: "ubuntu-22.04"
     steps:
-    - uses: "actions/checkout@v3"
+    - uses: "actions/checkout@v4"
     - name: "Deploy secret to PROD"
       uses: "nais/deploy/actions/deploy@v1"
       env:
@@ -82,7 +82,7 @@ jobs:
     needs: "build"
     runs-on: "ubuntu-22.04"
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@v4"
       - name: "Deploy alerts to DEV"
         uses: "nais/deploy/actions/deploy@v1"
         env:
@@ -95,7 +95,7 @@ jobs:
     needs: "deployAlertsToDev"
     runs-on: "ubuntu-22.04"
     steps:
-    - uses: "actions/checkout@v3"
+    - uses: "actions/checkout@v4"
     - name: "Deploy alerts to PROD"
       uses: "nais/deploy/actions/deploy@v1"
       env:
